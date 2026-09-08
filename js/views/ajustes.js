@@ -28,7 +28,7 @@ export async function vistaAjustes(_params, raiz) {
                     ejecuta el archivo <span class="strong">sql/schema.sql</span> y pega aquí la URL y la clave pública.</p>
                     <div class="row mt">
                         <button class="btn btn-sm" data-conexion>Conectar con Supabase</button>
-                        <a class="btn btn-ghost btn-sm" href="docs/PUESTA-EN-MARCHA.md" target="_blank">Ver guía paso a paso</a>
+                        <a class="btn btn-ghost btn-sm" href="https://github.com/alexestepagallego/puntozero-crm/blob/main/docs/PUESTA-EN-MARCHA.md" rel="noopener" target="_blank">Ver guía paso a paso</a>
                     </div>` : html`
                     <p class="small muted">Conectado a <span class="mono">${esc(conexion.url)}</span>.
                     Los permisos los aplica la propia base de datos: cada cliente solo puede leer lo suyo.</p>
@@ -60,7 +60,7 @@ export async function vistaAjustes(_params, raiz) {
                 Además puedes llevarte los vencimientos a tu calendario y recibirlos por email.</p>
                 <div class="row wrap mt">
                     <button class="btn btn-ghost btn-sm" data-ics>${raw(ico('calendario', 14))} Descargar calendario (.ics)</button>
-                    <a class="btn btn-ghost btn-sm" href="docs/AVISOS-POR-EMAIL.md" target="_blank">Activar el email semanal</a>
+                    <a class="btn btn-ghost btn-sm" href="https://github.com/alexestepagallego/puntozero-crm/blob/main/docs/AVISOS-POR-EMAIL.md" rel="noopener" target="_blank">Activar el email semanal</a>
                 </div>
                 <p class="tiny muted mt">El .ics se importa en Google Calendar, Apple Calendario u Outlook y avisa 7 días antes.</p>
             </div>
