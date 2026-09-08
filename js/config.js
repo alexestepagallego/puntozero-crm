@@ -16,8 +16,8 @@
  * porque cada tabla está protegida por políticas RLS (ver sql/schema.sql).
  */
 export const CONFIG = {
-    SUPABASE_URL: '',
-    SUPABASE_ANON_KEY: '',
+    SUPABASE_URL: 'https://fhbftluweedxcvglmbta.supabase.co',
+    SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZoYmZ0bHV3ZWVkeGN2Z2xtYnRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg4OTAzNjYsImV4cCI6MjEwNDQ2NjM2Nn0.sPiKR2Gpr9I7zLYND8wWgIqNHBkr8YKjY0ec-oyIs9k',
 
     // Nombre de la empresa, usado en cabeceras, portal de cliente y emails.
     EMPRESA: 'PuntoZero',
