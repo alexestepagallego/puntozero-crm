@@ -7,6 +7,8 @@ y ve en qué punto está su proyecto y qué tiene pendiente de pagar.
 Es una web estática (HTML + CSS + JavaScript, sin frameworks ni compilación), igual que
 `puntozerosl.es`. Se publica en GitHub Pages y los datos viven en Supabase.
 
+**En marcha:** <https://alexestepagallego.github.io/puntozero-crm/>
+
 ---
 
 ## Qué hace

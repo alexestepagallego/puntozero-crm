@@ -70,14 +70,14 @@ invalidarlo, genera uno nuevo desde ese mismo botón.
 
 ## 7. Publicar el CRM en tu dominio
 
-El repositorio ya se publica con GitHub Pages. Para que responda en
-`crm.puntozerosl.es`:
+El CRM ya está publicado en <https://alexestepagallego.github.io/puntozero-crm/>.
+Para que responda además en `crm.puntozerosl.es`:
 
 1. En tu proveedor del dominio (donde tengas `puntozerosl.es`), añade un registro:
 
    | Tipo  | Nombre | Valor                    |
    |-------|--------|--------------------------|
-   | CNAME | `crm`  | `TU-USUARIO.github.io.`  |
+   | CNAME | `crm`  | `alexestepagallego.github.io.` |
 
 2. En GitHub: **Settings → Pages → Custom domain**, escribe `crm.puntozerosl.es` y guarda.
 3. Marca **Enforce HTTPS** cuando GitHub te deje (tarda unos minutos en emitir el certificado).
