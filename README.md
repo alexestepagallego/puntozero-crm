@@ -8,6 +8,8 @@ Es una web estática (HTML + CSS + JavaScript, sin frameworks ni compilación), 
 `puntozerosl.es`. Se publica en GitHub Pages y los datos viven en Supabase.
 
 **En marcha:** <https://alexestepagallego.github.io/puntozero-crm/>
+**Base de datos:** proyecto `puntozero-crm` en Supabase (Irlanda), ya conectado y con el
+esquema aplicado. No hay que configurar nada para empezar a usarlo.
 
 ---
 
@@ -50,15 +52,15 @@ Luego entra en <http://localhost:8000> → **Ajustes → Cargar datos de ejemplo
 En este modo los datos se guardan **solo en tu navegador**: sirve para probar, pero los
 clientes no pueden entrar. Para eso hace falta el paso siguiente.
 
-## Ponerlo en producción
+## Producción
 
-1. Crea un proyecto gratuito en [supabase.com](https://supabase.com).
-2. Pega `sql/schema.sql` en el **SQL Editor** y ejecútalo.
-3. Abre el CRM → **Ajustes → Conectar con Supabase** y pega la URL y la clave `anon`
-   (Supabase → Project Settings → API).
-4. Entra con tu email: el primero que entra se queda como administrador.
+Ya está montado: proyecto de Supabase creado, esquema aplicado, permisos activos y el
+CRM conectado. Entras con tu email desde la dirección de arriba.
 
-Los pasos con capturas y detalles están en [docs/PUESTA-EN-MARCHA.md](docs/PUESTA-EN-MARCHA.md).
+Lo que queda por hacer y cómo (dar de alta socios, atar clientes a su email, apuntar
+`crm.puntozerosl.es`, copias de seguridad) está en
+[docs/PUESTA-EN-MARCHA.md](docs/PUESTA-EN-MARCHA.md). Si algún día hay que rehacer la base
+desde cero, ese mismo documento explica el proceso completo.
 Para el correo automático de vencimientos, [docs/AVISOS-POR-EMAIL.md](docs/AVISOS-POR-EMAIL.md).
 
 ---

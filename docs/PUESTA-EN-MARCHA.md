@@ -1,6 +1,15 @@
 # Puesta en marcha
 
-Guía de una sentada. No hace falta saber SQL: es copiar, pegar y darle a un botón.
+> **Los pasos 1, 2 y 3 ya están hechos.** El proyecto `puntozero-crm` existe en Supabase
+> (región Irlanda), el esquema está aplicado y el CRM ya está conectado: puedes entrar
+> directamente en <https://alexestepagallego.github.io/puntozero-crm/> con tu email.
+> La plaza de administrador está reservada para `alexestepagallego@gmail.com`.
+>
+> Se dejan documentados por si algún día hay que rehacerlo o montar una copia.
+> Lo que sí te queda pendiente: los apartados **5**, **6** y **7**.
+>
+> La contraseña de la base de datos está guardada en `~/puntozero-crm-supabase.txt`
+> (fuera del repositorio). Solo hace falta para conectarse por SQL directo.
 
 ---
 
@@ -29,13 +38,15 @@ Eso crea las tablas, los permisos y la función de los enlaces secretos.
 > La clave `anon` es pública a propósito, se puede subir al repositorio sin problema.
 > Lo que protege los datos son las políticas de la base de datos, no esa clave.
 
-## 4. Entrar por primera vez
+## 4. Entrar
 
-1. Recarga el CRM. Ahora pide un email.
+1. Abre el CRM. Pide un email.
 2. Escribe **tu** email y pulsa *Enviarme el enlace*.
 3. Te llega un correo de Supabase; al pulsar el enlace entras.
 
-**El primero que entra se queda como administrador.** El resto entra como cliente.
+**El primero que entra se queda como administrador**, y esa plaza ya está reservada para
+tu correo. Cualquier otro que entre lo hace como cliente y, si no tiene ficha asociada,
+no ve absolutamente nada.
 
 ## 5. Dar de alta a tus socios
 
