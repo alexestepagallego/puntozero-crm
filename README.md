@@ -29,6 +29,11 @@ esquema aplicado. No hay que configurar nada para empezar a usarlo.
 - **Tarifas**: tus precios de referencia, para presupuestar sin improvisar.
 - **Avisos**: panel al entrar, exportación a Google Calendar (.ics) y email automático.
 
+Al entrar se ve la **misma animación de carga que puntozerosl.es**: el logo se dibuja
+solo desde el punto cero y la cortina se retira. Dura 2,3 s y el CRM arranca por detrás
+mientras tanto. Si te cansa verla en cada recarga, pon `UNA_VEZ_POR_SESION = true` en
+`js/loader.js` y solo saldrá la primera vez que abras el CRM en cada pestaña.
+
 **Para el cliente**
 
 - Fase del proyecto, porcentaje de avance y qué estáis haciendo ahora mismo.
@@ -68,7 +73,7 @@ Para el correo automático de vencimientos, [docs/AVISOS-POR-EMAIL.md](docs/AVIS
 ## Cómo está montado
 
 ```
-index.html              Punto de entrada (una sola página)
+index.html              Punto de entrada (una sola página) + cortina de carga
 css/app.css             Estilos: blanco y negro, Inter, igual que la web
 js/
   config.js             Datos de la empresa y conexión con Supabase
@@ -78,6 +83,7 @@ js/
   forms.js              Definición de todos los formularios en un solo sitio
   ui.js                 Piezas visuales compartidas (iconos, etiquetas, cabeceras)
   util.js               Plantillas seguras, fechas, dinero, modales, .ics
+  loader.js             Animación de entrada con GSAP (la misma de puntozerosl.es)
   data/
     index.js            Reglas de negocio: alertas, balances, progreso
     supabase.js         Adaptador de nube
