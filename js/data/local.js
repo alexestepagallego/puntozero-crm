@@ -117,6 +117,10 @@ export const adaptadorLocal = {
         localStorage.removeItem(CLAVE);
     },
 
+    async funcion() {
+        throw new Error('Los accesos de clientes necesitan la base de datos en la nube');
+    },
+
     /** Acceso por enlace secreto: en local no hay servidor, se busca en memoria. */
     async proyectoPorToken(tk) {
         const datos = cargar();

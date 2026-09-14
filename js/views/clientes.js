@@ -2,7 +2,7 @@
 import { html, raw, esc, euros, fecha, on, confirmar, toast, copiar, porCampo, reiniciarEscuchas } from '../util.js';
 import {
     cache, cliente, proyectosDe, deCliente, balance, progreso, borrarCliente,
-    borrar, marcarPagado, nombreCliente,
+    borrar, marcarPagado, nombreCliente, adaptador, esLocal,
 } from '../data/index.js';
 import { cabecera, vacio, stat, ico, avatar, tagFase, tagPago, tagVence, progresoBarra, campoCopiar } from '../ui.js';
 import { abrirFicha } from '../forms.js';
@@ -280,27 +280,141 @@ export function tablaPagos(pagos, { mostrarCliente = false } = {}) {
         </table></div>`;
 }
 
-/** Explica cómo entra este cliente y ofrece los enlaces directos. */
+/**
+ * Panel de acceso del cliente.
+ *
+ * Nadie se registra solo en el CRM: el acceso lo crea aquí el equipo, con el
+ * correo que el cliente haya dado. La contraseña se genera en el servidor y se
+ * enseña una sola vez, para pasársela por WhatsApp.
+ */
 export function abrirPortalCliente(c) {
     const base = location.origin + location.pathname;
     const proyectos = proyectosDe(c.id);
 
-    modal({
+    const m = modal({
         titulo: `Acceso de ${c.empresa || c.nombre}`,
         ancho: true,
         cuerpo: html`
-            <p class="small muted">Dos formas de que vea el estado de su proyecto. Las dos funcionan a la vez.</p>
-
-            <h3 class="mt-lg">1 · Con su email</h3>
-            <p class="small muted">Entra en el CRM con <span class="strong">${c.email || 'su correo (falta rellenarlo en la ficha)'}</span>,
-            pide el enlace de acceso y verá solo sus proyectos.</p>
-            ${raw(campoCopiar(base, 'Enlace del portal'))}
+            <h3>1 · Su cuenta</h3>
+            <div id="panel-acceso" class="mt"><p class="small muted">Comprobando…</p></div>
 
             <h3 class="mt-lg">2 · Enlace secreto por proyecto</h3>
-            <p class="small muted">Se lo pasas por WhatsApp y entra sin registrarse. Quien tenga el enlace, entra.</p>
+            <p class="small muted">Sin cuenta ni contraseña: se lo pasas y entra. Quien tenga el enlace, entra.</p>
             ${raw(proyectos.length
                 ? proyectos.map(p => campoCopiar(`${base}#/p/${p.token_acceso}`, p.nombre)).join('')
                 : '<p class="small muted">Este cliente todavía no tiene proyectos.</p>')}`,
         acciones: `<button class="btn btn-ghost" data-cerrar>Cerrar</button>`,
     });
+
+    const panel = m.querySelector('#panel-acceso');
+
+    /** Mensaje listo para pegar en WhatsApp. */
+    const mensaje = (clave) => [
+        `Hola${c.nombre ? ' ' + c.nombre : ''}, ya puedes seguir el estado de tu proyecto con PuntoZero aquí:`,
+        base,
+        '',
+        `Usuario: ${c.email}`,
+        `Contraseña: ${clave}`,
+        '',
+        'Cuando entres puedes cambiar la contraseña desde tu nombre, abajo a la izquierda.',
+    ].join('\n');
+
+    /** Enlace de WhatsApp con el mensaje ya escrito (no envía nada solo). */
+    const enlaceWhatsapp = (clave) => {
+        const tel = String(c.telefono || '').replace(/\D/g, '');
+        if (tel.length < 9) return null;
+        const numero = tel.length === 9 ? `34${tel}` : tel;
+        return `https://wa.me/${numero}?text=${encodeURIComponent(mensaje(clave))}`;
+    };
+
+    /** Bloque de credenciales recién generadas. */
+    const pintarCredenciales = (clave, titulo) => {
+        const wa = enlaceWhatsapp(clave);
+        panel.innerHTML = html`
+            <div class="banner">${titulo} Apúntala o mándasela ahora: por seguridad no se puede volver a ver.</div>
+            ${raw(campoCopiar(c.email, 'Usuario'))}
+            ${raw(campoCopiar(clave, 'Contraseña'))}
+            <div class="row wrap mt">
+                <button class="btn btn-sm" data-copiar="${mensaje(clave)}">Copiar mensaje completo</button>
+                ${raw(wa ? `<a class="btn btn-ghost btn-sm" href="${esc(wa)}" target="_blank" rel="noopener">Abrir en WhatsApp</a>` : '')}
+                <button class="btn btn-ghost btn-sm" data-recargar>Hecho</button>
+            </div>`;
+    };
+
+    /** Estado actual de la cuenta del cliente. */
+    async function pintarEstado() {
+        if (esLocal()) {
+            panel.innerHTML = '<div class="banner warn">Los accesos de clientes necesitan la base de datos en la nube.</div>';
+            return;
+        }
+        if (!c.email) {
+            panel.innerHTML = html`
+                <div class="banner warn">Este cliente no tiene correo en su ficha, y hace falta para darle acceso.</div>
+                <button class="btn btn-sm" data-ir-ficha>Añadir el correo</button>`;
+            return;
+        }
+
+        panel.innerHTML = '<p class="small muted">Comprobando…</p>';
+        let estado;
+        try {
+            estado = await adaptador.funcion('acceso', { accion: 'estado', email: c.email });
+        } catch (e) {
+            panel.innerHTML = `<div class="banner warn">${esc(e.message)}</div>`;
+            return;
+        }
+
+        panel.innerHTML = estado.existe
+            ? html`
+                <div class="row wrap">
+                    <span class="tag ok">Tiene acceso</span>
+                    <span class="small muted">${c.email}${raw(estado.creado ? ` · desde el ${esc(fecha(estado.creado))}` : '')}</span>
+                </div>
+                <div class="row wrap mt">
+                    <button class="btn btn-ghost btn-sm" data-restablecer>Generar contraseña nueva</button>
+                    <button class="btn btn-danger btn-sm" data-revocar>Quitar el acceso</button>
+                </div>`
+            : html`
+                <p class="small muted">Todavía no tiene cuenta. Al crearla, entrará con
+                    <span class="strong">${c.email}</span> y verá solo sus proyectos, sus pagos y sus fechas.</p>
+                <button class="btn btn-sm mt" data-crear>Crear acceso</button>`;
+    }
+
+    panel.addEventListener('click', async (ev) => {
+        const boton = ev.target.closest('button');
+        if (!boton) return;
+
+        if (boton.dataset.irFicha !== undefined) {
+            m.cerrar();
+            return abrirFicha('cliente', { valores: c });
+        }
+        if (boton.dataset.recargar !== undefined) return pintarEstado();
+
+        const acciones = {
+            crear: { accion: 'crear', titulo: 'Acceso creado.' },
+            restablecer: { accion: 'restablecer', titulo: 'Contraseña nueva.' },
+            revocar: { accion: 'revocar' },
+        };
+        const cual = Object.keys(acciones).find(k => boton.dataset[k] !== undefined);
+        if (!cual) return;
+
+        if (cual === 'revocar' && !await confirmar(`${c.empresa || c.nombre} dejará de poder entrar. Su ficha y sus proyectos no se tocan.`)) return;
+        if (cual === 'restablecer' && !await confirmar('La contraseña actual dejará de funcionar. ¿Generar una nueva?', { peligro: false, textoOk: 'Generar' })) return;
+
+        boton.disabled = true;
+        try {
+            const r = await adaptador.funcion('acceso', {
+                accion: acciones[cual].accion,
+                email: c.email,
+                cliente_id: c.id,
+                nombre: c.nombre || c.empresa,
+            });
+            if (r.clave) pintarCredenciales(r.clave, acciones[cual].titulo);
+            else { toast('Acceso retirado'); pintarEstado(); }
+        } catch (e) {
+            toast(e.message, 'bad');
+            boton.disabled = false;
+        }
+    });
+
+    pintarEstado();
 }

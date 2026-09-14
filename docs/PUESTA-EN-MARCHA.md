@@ -61,21 +61,28 @@ Que cierren sesión y vuelvan a entrar: ya lo verán todo.
 
 ## 6. Dar acceso a un cliente
 
-1. Crea el cliente en el CRM con **su email real** en la ficha.
-2. Dile que entre en la dirección del CRM y pida el enlace con ese mismo email.
-   El sistema lo ata solo a su ficha y verá únicamente sus proyectos.
+**En el CRM nadie se registra solo.** El registro público está cerrado: los accesos los
+creáis vosotros, con el correo que os dé el cliente.
 
-Si el cliente ya había entrado antes de que crearas su ficha, átalos a mano:
+1. Crea el cliente con **su correo** en la ficha.
+2. En su ficha, botón **Portal del cliente** → *Crear acceso*.
+3. El CRM genera una contraseña y la enseña **una sola vez**. Tienes ahí mismo
+   *Copiar mensaje completo* y, si el cliente tiene teléfono en la ficha,
+   *Abrir en WhatsApp* con el mensaje ya escrito (tú le das a enviar).
+4. El cliente entra con su correo y esa contraseña, y ve solo lo suyo.
 
-```sql
-update perfiles
-set cliente_id = (select id from clientes where empresa = 'La Juana')
-where email = 'lajuana@example.com';
-```
+Desde ese mismo panel puedes, cuando haga falta:
 
-**Alternativa sin registro**: en la ficha del proyecto, botón *Enlace para el cliente*.
-Le pasas esa URL por WhatsApp y entra directo. Quien tenga el enlace, entra; si quieres
-invalidarlo, genera uno nuevo desde ese mismo botón.
+- **Generar contraseña nueva** si la pierde (la anterior deja de valer).
+- **Quitar el acceso** si dejáis de trabajar con él. Su ficha, sus proyectos y su
+  historial no se tocan: solo deja de poder entrar.
+
+Cada uno puede cambiar su propia contraseña desde el CRM, abajo a la izquierda,
+en *Cambiar mi contraseña*.
+
+**Alternativa sin cuenta**: en la ficha del proyecto, botón *Enlace para el cliente*.
+Le pasas esa URL por WhatsApp y entra directo, sin contraseña. Quien tenga el enlace,
+entra; si quieres invalidarlo, genera uno nuevo desde ese mismo botón.
 
 ---
 

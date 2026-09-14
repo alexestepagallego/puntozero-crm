@@ -39,8 +39,9 @@ mientras tanto. Si te cansa verla en cada recarga, pon `UNA_VEZ_POR_SESION = tru
 - Fase del proyecto, porcentaje de avance y qué estáis haciendo ahora mismo.
 - Sus fechas, su presupuesto y sus pagos (lo cobrado y lo pendiente).
 - Próximas renovaciones de dominio y cuotas.
-- Entra con su email (enlace de un solo uso) **o** con un enlace secreto que le pasáis por
-  WhatsApp, sin registrarse.
+- Entra con el usuario y la contraseña que le dais desde su ficha (*Portal del cliente →
+  Crear acceso*), **o** con un enlace secreto que le pasáis por WhatsApp, sin cuenta.
+  En el CRM **no hay registro abierto**: nadie entra si vosotros no lo dais de alta.
 
 ---
 
@@ -91,13 +92,20 @@ js/
     demo.js             Datos de ejemplo borrables
   views/                Una vista por pantalla
 sql/schema.sql          Tablas, permisos (RLS) y función del enlace secreto
-supabase/functions/     Correo automático de vencimientos
+supabase/functions/
+  acceso/               Alta, reseteo y revocación de accesos de clientes
+  avisos/               Correo automático de vencimientos
 ```
 
 **Seguridad**: la clave `anon` es pública por diseño. Quien manda son las políticas RLS
 de `sql/schema.sql`: un cliente autenticado solo puede leer sus propias filas, y nunca
 las notas internas, los accesos técnicos, las tarifas ni las oportunidades. Los enlaces
 secretos no leen tablas: pasan por una función controlada que devuelve solo ese proyecto.
+
+El alta de usuarios está cerrada en Supabase y solo la puede hacer la función
+`supabase/functions/acceso`, que comprueba contra la base de datos que quien llama es un
+administrador antes de tocar nada. La clave de servicio vive únicamente ahí, en el
+servidor: nunca llega al navegador.
 
 **Contraseñas**: el CRM guarda *dónde* está cada cosa (panel del hosting, registrador,
 repositorio), nunca las claves. Esas van en un gestor de contraseñas.

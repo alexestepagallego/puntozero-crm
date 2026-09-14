@@ -18,20 +18,20 @@ export async function vistaLogin(raiz) {
                 <p class="center muted small">Acceso al CRM y al portal de clientes</p>
 
                 <div class="auth-tabs">
-                    <button class="active" data-modo="enlace">Enlace por email</button>
-                    <button data-modo="clave">Contraseña</button>
+                    <button class="active" data-modo="clave">Contraseña</button>
+                    <button data-modo="enlace">Enlace por email</button>
                 </div>
 
-                <form id="form-enlace">
+                <form id="form-enlace" class="hidden">
                     <div class="field">
                         <label for="email">Tu email</label>
                         <input type="email" name="email" required placeholder="tu@correo.com" autocomplete="email">
-                        <span class="hint">Te enviamos un enlace de un solo uso. Sin contraseñas que recordar.</span>
+                        <span class="hint">Te enviamos un enlace de un solo uso al correo con el que te dimos de alta.</span>
                     </div>
                     <button class="btn btn-block" type="submit">Enviarme el enlace</button>
                 </form>
 
-                <form id="form-clave" class="hidden">
+                <form id="form-clave">
                     <div class="field">
                         <label for="email2">Email</label>
                         <input type="email" name="email2" required placeholder="tu@correo.com" autocomplete="email">
@@ -42,6 +42,11 @@ export async function vistaLogin(raiz) {
                     </div>
                     <button class="btn btn-block" type="submit">Entrar</button>
                 </form>
+
+                <p class="center tiny muted mt">
+                    Aquí no hay registro: los accesos los damos nosotros.
+                    ¿Eres cliente y aún no tienes el tuyo? Escríbenos.
+                </p>
 
                 <p class="center tiny muted mt-lg">
                     <a href="${CONFIG.EMPRESA_WEB}" target="_blank" rel="noopener">${esc(CONFIG.EMPRESA_WEB.replace('https://', ''))}</a>

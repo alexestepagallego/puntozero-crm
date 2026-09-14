@@ -2,11 +2,11 @@
  * Arranque del CRM: sesión, estructura de la aplicación y rutas.
  */
 import { CONFIG, modo } from './config.js';
-import { sesion, esAdmin, iniciarSesionGuardada, alCambiarSesion, salir } from './auth.js';
+import { sesion, esAdmin, iniciarSesionGuardada, alCambiarSesion, salir, cambiarClave } from './auth.js';
 import { cargarTodo, cache, alertas, recargarAdaptador } from './data/index.js';
 import { ruta, arrancar, alCambiar, actual, ir } from './router.js';
 import { registrarRefrescoNav } from './estado.js';
-import { $, $$, html, raw, esc, on, copiar, toast } from './util.js';
+import { $, $$, html, raw, esc, on, copiar, toast, formulario } from './util.js';
 import { ico, avatar } from './ui.js';
 
 import { vistaPanel } from './views/panel.js';
@@ -84,6 +84,9 @@ export function montarShell() {
                         </div>
                         <button class="btn-quiet" id="btn-salir" title="Salir">${raw(ico('salir'))}</button>
                     </div>
+                    ${raw(modo() === 'supabase'
+                        ? '<button class="btn-quiet tiny mt" id="btn-clave" style="padding-left:0">Cambiar mi contraseña</button>'
+                        : '')}
                     ${raw(modo() === 'local' ? '<p class="tiny muted mt">Modo local: los datos solo están en este navegador.</p>' : '')}
                 </div>
             </aside>
@@ -115,6 +118,20 @@ function conectarShell() {
     $('#btn-menu')?.addEventListener('click', () => document.body.classList.toggle('nav-open'));
     $('#scrim')?.addEventListener('click', () => document.body.classList.remove('nav-open'));
     $('#btn-salir')?.addEventListener('click', salir);
+    $('#btn-clave')?.addEventListener('click', () => formulario({
+        titulo: 'Cambiar mi contraseña',
+        campos: [
+            { name: 'clave', label: 'Contraseña nueva', tipo: 'password', requerido: true,
+              pista: 'Al menos 8 caracteres' },
+            { name: 'repetir', label: 'Repítela', tipo: 'password', requerido: true },
+        ],
+        onGuardar: async ({ clave, repetir }) => {
+            if (clave !== repetir) throw new Error('Las dos contraseñas no coinciden');
+            if (!clave || clave.length < 8) throw new Error('Usa al menos 8 caracteres');
+            await cambiarClave(clave);
+            toast('Contraseña cambiada');
+        },
+    }));
     $('#btn-nuevo')?.addEventListener('click', () => import('./views/nuevo.js').then(m => m.menuNuevo()));
 
     const buscador = $('#buscador');

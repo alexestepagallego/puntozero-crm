@@ -107,6 +107,27 @@ export const adaptadorSupabase = {
         return data || null;
     },
 
+    /**
+     * Llama a una función del servidor (Edge Function) con la sesión actual.
+     * Se usa para lo que el navegador no puede hacer por sí solo, como dar de
+     * alta el acceso de un cliente.
+     */
+    async funcion(nombre, cuerpo) {
+        const sb = await supa();
+        const { data, error } = await sb.functions.invoke(nombre, { body: cuerpo });
+        if (error) {
+            // El mensaje útil viene en el cuerpo de la respuesta, no en el error.
+            try {
+                const detalle = await error.context.json();
+                throw new Error(detalle.error || error.message);
+            } catch (e) {
+                throw new Error(e.message || 'No se ha podido completar la operación');
+            }
+        }
+        if (data?.error) throw new Error(data.error);
+        return data;
+    },
+
     /* ------------------------------------------------------------ ficheros */
 
     async subirArchivo(ruta, fichero) {

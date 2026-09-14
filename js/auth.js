@@ -54,13 +54,32 @@ async function aplicarUsuario(usuario) {
     return sesion;
 }
 
-/** Envía el enlace mágico de acceso. */
+/**
+ * Envía el enlace de acceso a alguien que YA tiene cuenta.
+ * `shouldCreateUser: false` es deliberado: nadie se da de alta solo, los
+ * accesos los crea el equipo de PuntoZero desde la ficha del cliente.
+ */
 export async function enviarEnlace(email) {
     const sb = await supa();
     const { error } = await sb.auth.signInWithOtp({
         email,
-        options: { emailRedirectTo: window.location.origin + window.location.pathname },
+        options: {
+            shouldCreateUser: false,
+            emailRedirectTo: window.location.origin + window.location.pathname,
+        },
     });
+    if (error) {
+        if (/signup|not found|disabled/i.test(error.message)) {
+            throw new Error('Ese correo no tiene acceso. Pídeselo a PuntoZero.');
+        }
+        throw new Error(error.message);
+    }
+}
+
+/** Cambia la contraseña del usuario que tiene la sesión abierta. */
+export async function cambiarClave(nueva) {
+    const sb = await supa();
+    const { error } = await sb.auth.updateUser({ password: nueva });
     if (error) throw new Error(error.message);
 }
 
