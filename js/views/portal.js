@@ -4,7 +4,7 @@
  * acaban pintando la misma pantalla.
  */
 import { CONFIG } from '../config.js';
-import { html, raw, esc, euros, fecha, plazo, desglose, diasHasta, toast } from '../util.js';
+import { html, raw, esc, euros, fecha, plazo, desglose, diasHasta, toast, on, reiniciarEscuchas } from '../util.js';
 import { cache, cliente, proyectosDe, deProyecto, adaptador, esLocal, cargarTodo, progreso, FASES } from '../data/index.js';
 import { sesion, esAdmin } from '../auth.js';
 import { cabecera, vacio, ico, fasesLinea, progresoBarra, tagPago, tagVence, tagFase } from '../ui.js';
@@ -13,6 +13,7 @@ import { ir } from '../router.js';
 /* =============================================== PORTAL CON SESIÓN ======= */
 
 export async function vistaPortal({ id } = {}, raiz) {
+    reiniciarEscuchas(raiz);
     // El administrador puede usar esta pantalla como vista previa de un cliente.
     const clienteId = esAdmin() ? (new URLSearchParams(location.hash.split('?')[1] || '').get('cliente') || null) : sesion.clienteId;
 
@@ -59,6 +60,7 @@ export async function vistaPortal({ id } = {}, raiz) {
 /* ============================================ ACCESO POR ENLACE SECRETO == */
 
 export async function vistaPublica(tk, raiz) {
+    reiniciarEscuchas(raiz);
     raiz.innerHTML = `<div class="auth-wrap"><div class="auth-box center"><p class="muted small">Abriendo tu proyecto…</p></div></div>`;
 
     let datos = null;
@@ -266,9 +268,7 @@ function normalizar(respuesta) {
 }
 
 function conectarDescargas(raiz) {
-    raiz.addEventListener('click', async (ev) => {
-        const boton = ev.target.closest('[data-abrir]');
-        if (!boton) return;
+    on(raiz, 'click', '[data-abrir]', async (_ev, boton) => {
         try {
             const url = await adaptador.urlArchivo(boton.dataset.abrir);
             if (url) window.open(url, '_blank', 'noopener');

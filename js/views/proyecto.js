@@ -4,8 +4,7 @@
  */
 import {
     html, raw, esc, euros, fecha, on, confirmar, toast, desglose, uuid,
-    formulario, modal, porCampo,
-} from '../util.js';
+    formulario, modal, porCampo, reiniciarEscuchas } from '../util.js';
 import {
     cache, adaptador, esLocal, proyecto, cliente, deProyecto, crear, editar, borrar,
     borrarProyecto, marcarPagado, progreso, FASES,
@@ -18,6 +17,7 @@ import { tablaPagos } from './clientes.js';
 let pestana = 'tablero';
 
 export async function vistaProyecto({ id }, raiz) {
+    reiniciarEscuchas(raiz);
     const p = proyecto(id);
     if (!p) {
         raiz.innerHTML = vacio('Este proyecto ya no existe.', '<a class="btn btn-sm" href="#/proyectos">Volver a proyectos</a>');
@@ -76,6 +76,9 @@ export async function vistaProyecto({ id }, raiz) {
 }
 
 function pintarPestana(p, panel) {
+    // Las pestañas reescriben el mismo contenedor: sin esto, cambiar de pestaña
+    // y volver duplicaría los botones de "Añadir pago", "Anotar", etc.
+    reiniciarEscuchas(panel);
     if (pestana === 'tablero') return pintarTablero(p, panel);
     if (pestana === 'resumen') return pintarResumen(p, panel);
     if (pestana === 'dinero') return pintarDinero(p, panel);

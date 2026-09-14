@@ -1,6 +1,6 @@
 /** Ajustes: conexión, equipo, copias de seguridad y datos de ejemplo. */
 import { CONFIG, modo, leerConexion } from '../config.js';
-import { html, raw, esc, on, confirmar, toast, descargar, descargarICS, fecha } from '../util.js';
+import { html, raw, esc, on, confirmar, toast, descargar, descargarICS, fecha, reiniciarEscuchas } from '../util.js';
 import { adaptador, esLocal, cache, eventosCalendario } from '../data/index.js';
 import { cargarEjemplos, borrarEjemplos, hayEjemplos } from '../data/demo.js';
 import { cabecera, ico, stat } from '../ui.js';
@@ -9,6 +9,7 @@ import { refrescar } from '../estado.js';
 import { sesion } from '../auth.js';
 
 export async function vistaAjustes(_params, raiz) {
+    reiniciarEscuchas(raiz);
     const conexion = leerConexion();
     const equipo = modo() === 'supabase' ? await adaptador.list('perfiles').catch(() => []) : [];
 

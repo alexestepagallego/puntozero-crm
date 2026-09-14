@@ -43,12 +43,35 @@ function pinta(valor) {
     return esc(valor);
 }
 
-/** Delegación de eventos: `on(raiz, 'click', '.btn', (ev, el) => …)`. */
+/**
+ * Corta las escuchas registradas antes en este contenedor y abre una tanda nueva.
+ *
+ * Hace falta porque las vistas se repintan cambiando el `innerHTML` de un mismo
+ * contenedor (`#view`), y los `addEventListener` del contenedor sobreviven a ese
+ * repintado. Sin esto se van acumulando vista tras vista y, como varias
+ * pantallas comparten selectores (`[data-nuevo]`), un solo clic acababa abriendo
+ * el formulario de cliente, el de proyecto, el de pago y el de servicio a la vez.
+ */
+const ESCUCHAS = new WeakMap();
+
+export function reiniciarEscuchas(raiz) {
+    ESCUCHAS.get(raiz)?.abort();
+    const control = new AbortController();
+    ESCUCHAS.set(raiz, control);
+    return control.signal;
+}
+
+/**
+ * Delegación de eventos: `on(raiz, 'click', '.btn', (ev, el) => …)`.
+ * Si el contenedor pasó por `reiniciarEscuchas`, la escucha muere con él en el
+ * siguiente repintado; si no (por ejemplo en `document.body`), es permanente.
+ */
 export function on(raiz, evento, selector, fn) {
+    const signal = ESCUCHAS.get(raiz)?.signal;
     raiz.addEventListener(evento, (ev) => {
         const el = ev.target.closest(selector);
         if (el && raiz.contains(el)) fn(ev, el);
-    });
+    }, signal ? { signal } : undefined);
 }
 
 /* ------------------------------------------------------------ FORMATO ---- */

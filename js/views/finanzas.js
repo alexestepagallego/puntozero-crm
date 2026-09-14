@@ -1,8 +1,7 @@
 /** Pagos, cuotas recurrentes y dominios: el dinero y las renovaciones. */
 import {
     html, raw, esc, euros, fecha, on, confirmar, toast, porCampo,
-    diasHasta, descargarICS, sumarPeriodo,
-} from '../util.js';
+    diasHasta, descargarICS, sumarPeriodo, reiniciarEscuchas } from '../util.js';
 import {
     cache, borrar, editar, marcarPagado, renovarSuscripcion, nombreCliente, balance,
 } from '../data/index.js';
@@ -16,6 +15,7 @@ import { tablaPagos } from './clientes.js';
 let filtroPagos = 'pendientes';
 
 export async function vistaPagos(_params, raiz) {
+    reiniciarEscuchas(raiz);
     const dinero = balance();
     const todos = cache.pagos.slice().sort(porCampo('fecha_vencimiento', 'desc'));
 
@@ -69,6 +69,7 @@ export async function vistaPagos(_params, raiz) {
 /* ============================================================= CUOTAS ==== */
 
 export async function vistaCuotas(_params, raiz) {
+    reiniciarEscuchas(raiz);
     const cuotas = cache.suscripciones.slice().sort(porCampo('proxima_fecha'));
     const activas = cuotas.filter(s => s.activa !== false);
     const dinero = balance();
@@ -134,6 +135,7 @@ export async function vistaCuotas(_params, raiz) {
 /* =========================================================== DOMINIOS ==== */
 
 export async function vistaDominios(_params, raiz) {
+    reiniciarEscuchas(raiz);
     const dominios = cache.dominios.slice().sort(porCampo('fecha_renovacion'));
     const proximos = dominios.filter(d => {
         const q = diasHasta(d.fecha_renovacion);

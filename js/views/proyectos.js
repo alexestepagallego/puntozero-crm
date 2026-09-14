@@ -1,5 +1,5 @@
 /** Listado de proyectos con filtro por fase y por cliente. */
-import { html, raw, esc, euros, fecha, on, plazo, diasHasta } from '../util.js';
+import { html, raw, esc, euros, fecha, on, plazo, diasHasta, reiniciarEscuchas } from '../util.js';
 import { cache, FASES, progreso, nombreCliente } from '../data/index.js';
 import { cabecera, vacio, ico, tagFase, progresoBarra } from '../ui.js';
 import { abrirFicha } from '../forms.js';
@@ -8,6 +8,7 @@ let filtroFase = 'todas';
 let filtroCliente = 'todos';
 
 export async function vistaProyectos(_params, raiz) {
+    reiniciarEscuchas(raiz);
     const proyectos = cache.proyectos
         .filter(p => filtroFase === 'todas' || p.estado === filtroFase)
         .filter(p => filtroCliente === 'todos' || String(p.cliente_id) === filtroCliente)

@@ -45,6 +45,7 @@ const NAV_CLIENTE = [
 ];
 
 let shellMontado = false;
+let globalesConectadas = false;
 
 /** Dibuja la estructura fija (barra lateral + cabecera) una sola vez. */
 export function montarShell() {
@@ -123,14 +124,17 @@ function conectarShell() {
         buscador.addEventListener('focus', () => pintarBusqueda(buscador.value));
     }
 
-    // Copiar al portapapeles desde cualquier vista.
-    on(document.body, 'click', '[data-copiar]', (ev, el) => {
-        ev.preventDefault();
-        copiar(el.dataset.copiar);
-    });
+    // Copiar al portapapeles desde cualquier vista. Va en el body, que no se
+    // repinta nunca, así que se engancha una sola vez en toda la sesión.
+    if (!globalesConectadas) {
+        globalesConectadas = true;
+        on(document.body, 'click', '[data-copiar]', (ev, el) => {
+            ev.preventDefault();
+            copiar(el.dataset.copiar);
+        });
+        window.addEventListener('hashchange', () => document.body.classList.remove('nav-open'));
+    }
 
-    // Cerrar el menú lateral al navegar en móvil.
-    window.addEventListener('hashchange', () => document.body.classList.remove('nav-open'));
 }
 
 /* ------------------------------------------------------------ BUSCADOR --- */

@@ -1,5 +1,5 @@
 /** Listado de clientes y ficha completa de cada uno. */
-import { html, raw, esc, euros, fecha, on, confirmar, toast, copiar, porCampo } from '../util.js';
+import { html, raw, esc, euros, fecha, on, confirmar, toast, copiar, porCampo, reiniciarEscuchas } from '../util.js';
 import {
     cache, cliente, proyectosDe, deCliente, balance, progreso, borrarCliente,
     borrar, marcarPagado, nombreCliente,
@@ -12,6 +12,7 @@ import { modal } from '../util.js';
 /* ------------------------------------------------------------- LISTADO --- */
 
 export async function vistaClientes(_params, raiz) {
+    reiniciarEscuchas(raiz);
     const clientes = cache.clientes.slice().sort(porCampo('empresa'));
 
     raiz.innerHTML = html`
@@ -53,6 +54,7 @@ export async function vistaClientes(_params, raiz) {
 /* --------------------------------------------------------------- FICHA --- */
 
 export async function vistaCliente({ id }, raiz) {
+    reiniciarEscuchas(raiz);
     const c = cliente(id);
     if (!c) {
         raiz.innerHTML = vacio('Este cliente ya no existe.', '<a class="btn btn-sm" href="#/clientes">Volver a clientes</a>');

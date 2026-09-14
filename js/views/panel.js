@@ -1,10 +1,11 @@
 /** Panel de inicio: lo que vence, cómo va el dinero y qué proyectos hay vivos. */
-import { html, raw, esc, euros, eurosCorto, fecha, plazo, descargarICS, on, toast } from '../util.js';
+import { html, raw, esc, euros, eurosCorto, fecha, plazo, descargarICS, on, toast, reiniciarEscuchas } from '../util.js';
 import { cache, alertas, balance, progreso, nombreCliente, eventosCalendario } from '../data/index.js';
 import { cabecera, vacio, stat, ico, progresoBarra, tagFase, tagPago } from '../ui.js';
 import { abrirFicha } from '../forms.js';
 
 export async function vistaPanel(_params, raiz) {
+    reiniciarEscuchas(raiz);
     const lista = alertas();
     const dinero = balance();
     const activos = cache.proyectos

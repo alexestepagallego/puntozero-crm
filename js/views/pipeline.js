@@ -1,11 +1,12 @@
 /** Oportunidades: quién ha preguntado, a quién hay que enviar presupuesto. */
-import { html, raw, esc, euros, fecha, on, confirmar, toast } from '../util.js';
+import { html, raw, esc, euros, fecha, on, confirmar, toast, reiniciarEscuchas } from '../util.js';
 import { cache, ESTADOS_LEAD, borrar, editar, crear } from '../data/index.js';
 import { cabecera, vacio, stat, ico } from '../ui.js';
 import { abrirFicha } from '../forms.js';
 import { refrescar } from '../estado.js';
 
 export async function vistaPipeline(_params, raiz) {
+    reiniciarEscuchas(raiz);
     const leads = cache.leads;
     const abiertos = leads.filter(l => !['ganado', 'perdido'].includes(l.estado));
     const valorAbierto = abiertos.reduce((s, l) => s + (Number(l.valor_estimado) || 0), 0);

@@ -1,5 +1,5 @@
 /** Catálogo de servicios y tarifas de referencia. */
-import { html, raw, esc, euros, on, confirmar, toast, desglose } from '../util.js';
+import { html, raw, esc, euros, on, confirmar, toast, desglose, reiniciarEscuchas } from '../util.js';
 import { CONFIG } from '../config.js';
 import { cache, borrar } from '../data/index.js';
 import { cabecera, vacio, ico } from '../ui.js';
@@ -11,6 +11,7 @@ const ETIQUETA_UNIDAD = {
 };
 
 export async function vistaCatalogo(_params, raiz) {
+    reiniciarEscuchas(raiz);
     const servicios = cache.servicios.slice().sort((a, b) => (b.precio || 0) - (a.precio || 0));
 
     raiz.innerHTML = html`
