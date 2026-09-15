@@ -4,7 +4,7 @@
  */
 import {
     html, raw, esc, euros, fecha, on, confirmar, toast, desglose, uuid,
-    formulario, modal, porCampo, reiniciarEscuchas } from '../util.js';
+    formulario, modal, porCampo, reiniciarEscuchas, urlSegura } from '../util.js';
 import {
     cache, adaptador, esLocal, proyecto, cliente, deProyecto, crear, editar, borrar,
     borrarProyecto, marcarPagado, progreso, FASES,
@@ -432,7 +432,7 @@ function pintarAccesos(p, panel) {
                             <span class="row gap-sm">${raw(ico('llave', 14))}<span class="strong small">${a.titulo}</span></span>
                             <span class="tag line">${a.tipo}</span>
                         </div>
-                        ${raw(a.url ? `<a class="small truncate" href="${esc(a.url)}" target="_blank" rel="noopener">${esc(a.url)}</a>` : '')}
+                        ${raw(urlSegura(a.url) ? `<a class="small truncate" href="${esc(urlSegura(a.url))}" target="_blank" rel="noopener noreferrer">${esc(a.url)}</a>` : (a.url ? `<span class="small muted">${esc(a.url)}</span>` : ''))}
                         ${raw(a.usuario ? `<p class="tiny muted mt">Usuario: ${esc(a.usuario)}</p>` : '')}
                         ${raw(a.notas ? `<p class="tiny muted">${esc(a.notas)}</p>` : '')}
                         <div class="right mt"><button class="btn-quiet tiny" data-borrar-acceso="${esc(a.id)}">Eliminar</button></div>

@@ -1,5 +1,5 @@
 /** Listado de clientes y ficha completa de cada uno. */
-import { html, raw, esc, euros, fecha, on, confirmar, toast, copiar, porCampo, reiniciarEscuchas } from '../util.js';
+import { html, raw, esc, euros, fecha, on, confirmar, toast, copiar, porCampo, reiniciarEscuchas, urlSegura } from '../util.js';
 import {
     cache, cliente, proyectosDe, deCliente, balance, progreso, borrarCliente,
     borrar, marcarPagado, nombreCliente, adaptador, esLocal,
@@ -160,7 +160,7 @@ export async function vistaCliente({ id }, raiz) {
                                 <span class="row gap-sm">${raw(ico('llave', 14))}<span class="strong small">${a.titulo}</span></span>
                                 <span class="tag line">${a.tipo}</span>
                             </div>
-                            ${raw(a.url ? `<a class="small truncate" href="${esc(a.url)}" target="_blank" rel="noopener">${esc(a.url)}</a>` : '')}
+                            ${raw(urlSegura(a.url) ? `<a class="small truncate" href="${esc(urlSegura(a.url))}" target="_blank" rel="noopener noreferrer">${esc(a.url)}</a>` : (a.url ? `<span class="small muted">${esc(a.url)}</span>` : ''))}
                             ${raw(a.usuario ? `<p class="tiny muted mt">Usuario: ${esc(a.usuario)}</p>` : '')}
                             ${raw(a.notas ? `<p class="tiny muted">${esc(a.notas)}</p>` : '')}
                             <div class="right mt"><button class="btn-quiet tiny" data-borrar-acceso="${esc(a.id)}">Eliminar</button></div>

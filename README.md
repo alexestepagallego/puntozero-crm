@@ -92,6 +92,7 @@ js/
     demo.js             Datos de ejemplo borrables
   views/                Una vista por pantalla
 sql/schema.sql          Tablas, permisos (RLS) y función del enlace secreto
+sql/002-seguridad.sql   Validación en la base y registro de accesos
 supabase/functions/
   acceso/               Alta, reseteo y revocación de accesos de clientes
   avisos/               Correo automático de vencimientos
@@ -106,6 +107,9 @@ El alta de usuarios está cerrada en Supabase y solo la puede hacer la función
 `supabase/functions/acceso`, que comprueba contra la base de datos que quien llama es un
 administrador antes de tocar nada. La clave de servicio vive únicamente ahí, en el
 servidor: nunca llega al navegador.
+
+El repaso completo, punto por punto y con las pruebas hechas, está en
+[docs/SEGURIDAD.md](docs/SEGURIDAD.md).
 
 **Contraseñas**: el CRM guarda *dónde* está cada cosa (panel del hosting, registrador,
 repositorio), nunca las claves. Esas van en un gestor de contraseñas.

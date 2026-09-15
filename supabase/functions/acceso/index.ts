@@ -38,12 +38,40 @@ const admin = createClient(
     { auth: { persistSession: false, autoRefreshToken: false } },
 );
 
-/** Contraseña legible: sin caracteres que se confundan al dictarla por teléfono. */
+/**
+ * Contraseña legible: sin caracteres que se confundan al dictarla por teléfono
+ * (ni O/0 ni l/1). Garantiza mayúscula, minúscula y número porque el proyecto
+ * exige las tres; al azar podría salir alguna sin números y sería rechazada.
+ */
 function generarClave() {
-    const alfabeto = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
-    const bytes = crypto.getRandomValues(new Uint8Array(16));
-    const cadena = Array.from(bytes, (b) => alfabeto[b % alfabeto.length]).join('');
+    const MAYUS = 'ABCDEFGHJKMNPQRSTUVWXYZ';
+    const MINUS = 'abcdefghjkmnpqrstuvwxyz';
+    const NUMS = '23456789';
+    const todo = MAYUS + MINUS + NUMS;
+
+    const azar = (n: number) => crypto.getRandomValues(new Uint8Array(n));
+    const de = (alfabeto: string, n: number) =>
+        Array.from(azar(n), (b) => alfabeto[b % alfabeto.length]);
+
+    // Tres obligatorias + trece libres, y luego se barajan.
+    const letras = [
+        de(MAYUS, 1)[0], de(MINUS, 1)[0], de(NUMS, 1)[0],
+        ...de(todo, 13),
+    ];
+    for (let i = letras.length - 1; i > 0; i--) {
+        const j = azar(1)[0] % (i + 1);
+        [letras[i], letras[j]] = [letras[j], letras[i]];
+    }
+    const cadena = letras.join('');
     return `${cadena.slice(0, 8)}-${cadena.slice(8)}`;
+}
+
+/** Deja constancia de quién dio o quitó un acceso. */
+async function anotar(accion: string, email: string, actor: { id: string; email?: string }, cliente_id?: string | null) {
+    await admin.from('registro_accesos').insert({
+        accion, email, cliente_id: cliente_id ?? null,
+        hecho_por: actor.id, email_actor: actor.email ?? null,
+    });
 }
 
 async function buscarUsuario(email: string) {
@@ -78,12 +106,17 @@ Deno.serve(async (req) => {
         if (perfil?.rol !== 'admin') return responder({ error: 'Solo el equipo de PuntoZero puede dar accesos' }, 403);
 
         // 3. A lo que venía.
-        const { accion, email: correoBruto, cliente_id, nombre } = await req.json();
+        const crudo = await req.text();
+        if (crudo.length > 4000) return responder({ error: 'Petición demasiado grande' }, 413);
+        const { accion, email: correoBruto, cliente_id, nombre } = JSON.parse(crudo || '{}');
         const email = String(correoBruto || '').trim().toLowerCase();
 
         if (!accion) return responder({ error: 'Falta la acción' }, 400);
-        if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+        if (!email || email.length > 160 || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
             return responder({ error: 'El correo no es válido' }, 400);
+        }
+        if (cliente_id && !/^[0-9a-f-]{36}$/i.test(String(cliente_id))) {
+            return responder({ error: 'Cliente no válido' }, 400);
         }
 
         const usuario = await buscarUsuario(email);
@@ -111,6 +144,7 @@ Deno.serve(async (req) => {
                 .eq('id', creado.user.id);
             if (errorPerfil) return responder({ error: errorPerfil.message }, 400);
 
+            await anotar('crear', email, sesion.user, cliente_id);
             return responder({ email, clave, creado: true });
         }
 
@@ -119,6 +153,7 @@ Deno.serve(async (req) => {
             const clave = generarClave();
             const { error } = await admin.auth.admin.updateUserById(usuario.id, { password: clave });
             if (error) return responder({ error: error.message }, 400);
+            await anotar('restablecer', email, sesion.user, cliente_id);
             return responder({ email, clave, restablecida: true });
         }
 
@@ -131,6 +166,7 @@ Deno.serve(async (req) => {
             }
             const { error } = await admin.auth.admin.deleteUser(usuario.id);
             if (error) return responder({ error: error.message }, 400);
+            await anotar('revocar', email, sesion.user, cliente_id);
             return responder({ email, revocado: true });
         }
 

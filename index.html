@@ -6,68 +6,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="robots" content="noindex, nofollow">
     <meta name="theme-color" content="#0a0a0a">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+
+    <!--
+        Política de seguridad de contenido: la lista blanca de lo que esta página
+        puede cargar y con quién puede hablar. Sin scripts en línea y sin orígenes
+        sueltos, un texto malicioso guardado en la base no puede ejecutarse.
+        (Los estilos en línea sí se permiten: las barras de progreso y el tablero
+        los usan, y no son una vía de ataque como sí lo es el JavaScript.)
+    -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'none';
+        script-src 'self' https://cdnjs.cloudflare.com https://esm.sh;
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        font-src https://fonts.gstatic.com;
+        img-src 'self' data:;
+        connect-src 'self' https://fhbftluweedxcvglmbta.supabase.co wss://fhbftluweedxcvglmbta.supabase.co https://esm.sh;
+        form-action 'none';
+        base-uri 'none';
+        object-src 'none';
+        frame-src 'none';
+        upgrade-insecure-requests">
     <title>PuntoZero · CRM</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/app.css">
+    <link rel="stylesheet" href="css/loader.css">
     <link rel="icon"
         href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230a0a0a'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%23fff'/%3E%3C/svg%3E">
 
     <!-- Animación de entrada: mismo logo y misma línea de tiempo que puntozerosl.es.
          Los estilos van aquí, en línea, para que la cortina esté pintada antes de
          que llegue la hoja de estilos y no se vea el CRM a medio montar. -->
-    <style>
-        #pz-loader {
-            position: fixed;
-            inset: 0;
-            z-index: 9999;
-            display: grid;
-            place-items: center;
-            background: #0a0a0a;
-            will-change: transform;
-        }
-
-        #pz-loader .pz-stage {
-            position: relative;
-            display: grid;
-            place-items: center;
-            width: min(56vw, 40vh, 300px);
-            aspect-ratio: 1 / 1;
-        }
-
-        #pz-loader .pz-glow {
-            position: absolute;
-            inset: -35%;
-            border-radius: 50%;
-            opacity: 0;
-            pointer-events: none;
-            background: radial-gradient(circle,
-                rgba(255, 255, 255, .40) 0%,
-                rgba(255, 255, 255, .10) 38%,
-                transparent 68%);
-        }
-
-        #pz-logo {
-            position: relative;
-            width: 100%;
-            height: auto;
-            color: #fff;
-            overflow: visible;
-            /* Lo destapa GSAP al montar la línea de tiempo: así no se ve el
-               logo entero antes de empezar a dibujarse. */
-            visibility: hidden;
-        }
-
-        /* Con "reducir movimiento" el logo se ve quieto, sin dibujarse. */
-        .pz-quieto #pz-logo { visibility: visible; }
-
-        #pz-loader.pz-fuera { opacity: 0; transition: opacity .35s ease; }
-
-        /* Mientras la cortina está puesta no se puede hacer scroll por detrás. */
-        .pz-cargando, .pz-cargando body { overflow: hidden; }
-    </style>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.15.0/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.15.0/DrawSVGPlugin.min.js"></script>
@@ -114,19 +86,7 @@
         <style>#pz-loader { display: none; }</style>
     </noscript>
 
-    <script>
-        (function () {
-            document.documentElement.classList.add('pz-cargando');
-            // Red de seguridad por si js/loader.js no llega a cargar (404, red
-            // caída): sin esto la cortina taparía el CRM para siempre. El tope
-            // propio del loader es de 6 s, así que esto solo salta si no está.
-            window.setTimeout(function () {
-                var l = document.getElementById('pz-loader');
-                if (l && l.parentNode) l.parentNode.removeChild(l);
-                document.documentElement.classList.remove('pz-cargando');
-            }, 7000);
-        })();
-    </script>
+    <script src="js/arranque.js"></script>
     <script src="js/loader.js"></script>
 
     <div id="app">

@@ -122,12 +122,15 @@ function conectarShell() {
         titulo: 'Cambiar mi contraseña',
         campos: [
             { name: 'clave', label: 'Contraseña nueva', tipo: 'password', requerido: true,
-              pista: 'Al menos 8 caracteres' },
+              pista: 'Mínimo 10 caracteres, con mayúscula, minúscula y número' },
             { name: 'repetir', label: 'Repítela', tipo: 'password', requerido: true },
         ],
         onGuardar: async ({ clave, repetir }) => {
             if (clave !== repetir) throw new Error('Las dos contraseñas no coinciden');
-            if (!clave || clave.length < 8) throw new Error('Usa al menos 8 caracteres');
+            if (clave.length < 10) throw new Error('Usa al menos 10 caracteres');
+            if (!/[a-z]/.test(clave) || !/[A-Z]/.test(clave) || !/[0-9]/.test(clave)) {
+                throw new Error('Debe llevar mayúscula, minúscula y número');
+            }
             await cambiarClave(clave);
             toast('Contraseña cambiada');
         },

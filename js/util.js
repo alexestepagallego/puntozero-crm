@@ -381,6 +381,18 @@ export async function copiar(texto) {
     }
 }
 
+/**
+ * Devuelve la URL solo si es navegable (http o https).
+ *
+ * Es una segunda barrera: la base ya rechaza cualquier otro esquema, pero si
+ * algún día entrara un `javascript:...` por otra vía, aquí no se pinta como
+ * enlace y no puede ejecutarse al pulsarlo.
+ */
+export function urlSegura(url) {
+    const texto = String(url || '').trim();
+    return /^https?:\/\//i.test(texto) ? texto : null;
+}
+
 /** Ordena por campo (fechas ISO y números incluidos). */
 export function porCampo(campo, dir = 'asc') {
     return (a, b) => {

@@ -12,6 +12,9 @@ export async function vistaAjustes(_params, raiz) {
     reiniciarEscuchas(raiz);
     const conexion = leerConexion();
     const equipo = modo() === 'supabase' ? await adaptador.list('perfiles').catch(() => []) : [];
+    const registro = modo() === 'supabase'
+        ? (await adaptador.list('registro_accesos', { orden: 'creado', dir: 'desc' }).catch(() => [])).slice(0, 12)
+        : [];
 
     raiz.innerHTML = html`
         ${raw(cabecera({ titulo: 'Ajustes', sub: 'Conexión, equipo y copias de seguridad' }))}
@@ -54,6 +57,26 @@ export async function vistaAjustes(_params, raiz) {
                         </div>`).join('') : '<p class="small muted">Todavía no ha entrado nadie más.</p>'}
                     ` : '<p class="small muted">En modo local solo existe un usuario: tú. El control de usuarios llega al conectar Supabase.</p>')}
             </div>
+
+            ${raw(modo() === 'supabase' ? html`
+                <div class="card">
+                    <div class="card-head">
+                        <h2>Accesos dados a clientes</h2>
+                        <span class="tag line">${registro.length} últimos</span>
+                    </div>
+                    <p class="small muted mb">Quién dio o quitó el acceso a cada cliente, y cuándo.
+                    Lo escribe el servidor: no se puede tocar desde aquí.</p>
+                    ${registro.length ? registro.map(r => html`
+                        <div class="list-item">
+                            <span class="tag ${raw(r.accion === 'revocar' ? 'bad' : r.accion === 'crear' ? 'ok' : 'warn')}">${raw({
+                                crear: 'alta', restablecer: 'nueva clave', revocar: 'baja',
+                            }[r.accion] || r.accion)}</span>
+                            <span class="stack grow" style="min-width:0">
+                                <span class="small strong truncate">${r.email}</span>
+                                <span class="tiny muted">${r.email_actor || '—'} · ${fecha(r.creado)}</span>
+                            </span>
+                        </div>`).join('') : '<p class="small muted">Todavía no has dado ningún acceso.</p>'}
+                </div>` : '')}
 
             <div class="card">
                 <div class="card-head"><h2>Avisos</h2></div>

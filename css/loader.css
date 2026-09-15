@@ -1,0 +1,51 @@
+/* Cortina de carga. Va en su propio archivo (y no incrustado en el HTML)
+   para que la política de seguridad de contenido pueda ser estricta. */
+
+#pz-loader {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: grid;
+    place-items: center;
+    background: #0a0a0a;
+    will-change: transform;
+}
+
+#pz-loader .pz-stage {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: min(56vw, 40vh, 300px);
+    aspect-ratio: 1 / 1;
+}
+
+#pz-loader .pz-glow {
+    position: absolute;
+    inset: -35%;
+    border-radius: 50%;
+    opacity: 0;
+    pointer-events: none;
+    background: radial-gradient(circle,
+        rgba(255, 255, 255, .40) 0%,
+        rgba(255, 255, 255, .10) 38%,
+        transparent 68%);
+}
+
+#pz-logo {
+    position: relative;
+    width: 100%;
+    height: auto;
+    color: #fff;
+    overflow: visible;
+    /* Lo destapa GSAP al montar la línea de tiempo: así no se ve el
+       logo entero antes de empezar a dibujarse. */
+    visibility: hidden;
+}
+
+/* Con "reducir movimiento" el logo se ve quieto, sin dibujarse. */
+.pz-quieto #pz-logo { visibility: visible; }
+
+#pz-loader.pz-fuera { opacity: 0; transition: opacity .35s ease; }
+
+/* Mientras la cortina está puesta no se puede hacer scroll por detrás. */
+.pz-cargando, .pz-cargando body { overflow: hidden; }
