@@ -50,6 +50,7 @@ export async function vistaLogin(raiz) {
 
                 <p class="center tiny muted mt-lg">
                     <a href="${CONFIG.EMPRESA_WEB}" target="_blank" rel="noopener">${esc(CONFIG.EMPRESA_WEB.replace('https://', ''))}</a>
+                    · <a href="#/privacidad">Privacidad</a>
                     · <button class="btn-quiet tiny" id="btn-conexion">Configurar conexión</button>
                 </p>
             </div>

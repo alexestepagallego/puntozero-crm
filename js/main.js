@@ -7,7 +7,7 @@ import { cargarTodo, cache, alertas, recargarAdaptador } from './data/index.js';
 import { ruta, arrancar, alCambiar, actual, ir } from './router.js';
 import { registrarRefrescoNav } from './estado.js';
 import { $, $$, html, raw, esc, on, copiar, toast, formulario } from './util.js';
-import { ico, avatar } from './ui.js';
+import { ico, avatar, ponerTitulo } from './ui.js';
 
 import { vistaPanel } from './views/panel.js';
 import { vistaClientes, vistaCliente } from './views/clientes.js';
@@ -228,11 +228,16 @@ export function refrescarNav() {
 
 /* --------------------------------------------------------------- RUTAS --- */
 
-/** Envuelve una vista: monta el shell, comprueba permisos y pinta. */
-function protegida(vista, soloAdmin = true) {
+/**
+ * Envuelve una vista: monta el shell, comprueba permisos, pone el título de la
+ * pestaña y pinta. Las fichas concretas (un cliente, un proyecto) afinan el
+ * título por su cuenta con el nombre de verdad.
+ */
+function protegida(vista, { soloAdmin = true, titulo = '' } = {}) {
     return async (params) => {
         if (soloAdmin && !esAdmin()) return ir('/portal');
         montarShell();
+        ponerTitulo(titulo);
         await vista(params, $('#view'));
         refrescarNav();
         window.scrollTo(0, 0);
@@ -243,20 +248,21 @@ function registrarRutas() {
     ruta('/', async () => {
         if (!esAdmin()) return ir('/portal');
         montarShell();
+        ponerTitulo('Panel');
         await vistaPanel({}, $('#view'));
         refrescarNav();
     });
 
-    ruta('/clientes', protegida(vistaClientes));
+    ruta('/clientes', protegida(vistaClientes, { titulo: 'Clientes' }));
     ruta('/cliente/:id', protegida(vistaCliente));
-    ruta('/proyectos', protegida(vistaProyectos));
+    ruta('/proyectos', protegida(vistaProyectos, { titulo: 'Proyectos' }));
     ruta('/proyecto/:id', protegida(vistaProyecto));
-    ruta('/pagos', protegida(vistaPagos));
-    ruta('/cuotas', protegida(vistaCuotas));
-    ruta('/dominios', protegida(vistaDominios));
-    ruta('/catalogo', protegida(vistaCatalogo));
-    ruta('/pipeline', protegida(vistaPipeline));
-    ruta('/ajustes', protegida(vistaAjustes));
+    ruta('/pagos', protegida(vistaPagos, { titulo: 'Pagos' }));
+    ruta('/cuotas', protegida(vistaCuotas, { titulo: 'Cuotas' }));
+    ruta('/dominios', protegida(vistaDominios, { titulo: 'Dominios' }));
+    ruta('/catalogo', protegida(vistaCatalogo, { titulo: 'Tarifas' }));
+    ruta('/pipeline', protegida(vistaPipeline, { titulo: 'Oportunidades' }));
+    ruta('/ajustes', protegida(vistaAjustes, { titulo: 'Ajustes' }));
 
     // Enlace secreto: se pinta a pantalla completa, sin barra lateral.
     ruta('/p/:token', async ({ token }) => {
@@ -266,8 +272,15 @@ function registrarRutas() {
     });
 
     // Portal del cliente (también accesible para el administrador, como vista previa).
-    ruta('/portal', protegida(vistaPortal, false));
-    ruta('/portal/:id', protegida(vistaPortal, false));
+    ruta('/portal', protegida(vistaPortal, { soloAdmin: false, titulo: 'Tus proyectos' }));
+    ruta('/portal/:id', protegida(vistaPortal, { soloAdmin: false }));
+
+    // Aviso de privacidad: a pantalla completa y sin necesidad de sesión.
+    ruta('/privacidad', async () => {
+        shellMontado = false;
+        const { vistaPrivacidad } = await import('./views/privacidad.js');
+        await vistaPrivacidad($('#app'));
+    });
 
     alCambiar(() => document.body.classList.remove('nav-open'));
 }
@@ -279,6 +292,12 @@ async function inicio() {
 
     // Acceso por enlace secreto: no necesita sesión ni estructura de la app.
     const camino = actual();
+    if (camino === '/privacidad') {
+        const { vistaPrivacidad } = await import('./views/privacidad.js');
+        await vistaPrivacidad($('#app'));
+        window.addEventListener('hashchange', () => location.reload());
+        return;
+    }
     if (camino.startsWith('/p/')) {
         await vistaPublica(camino.slice(3), $('#app'));
         window.addEventListener('hashchange', () => location.reload());

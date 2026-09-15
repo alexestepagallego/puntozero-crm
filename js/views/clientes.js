@@ -4,7 +4,7 @@ import {
     cache, cliente, proyectosDe, deCliente, balance, progreso, borrarCliente,
     borrar, marcarPagado, nombreCliente, adaptador, esLocal,
 } from '../data/index.js';
-import { cabecera, vacio, stat, ico, avatar, tagFase, tagPago, tagVence, progresoBarra, campoCopiar } from '../ui.js';
+import { cabecera, vacio, stat, ico, avatar, tagFase, tagPago, tagVence, progresoBarra, campoCopiar, ponerTitulo } from '../ui.js';
 import { abrirFicha } from '../forms.js';
 import { refrescar } from '../estado.js';
 import { modal } from '../util.js';
@@ -68,10 +68,11 @@ export async function vistaCliente({ id }, raiz) {
     const accesos = deCliente('accesos', c.id);
     const notas = deCliente('notas', c.id).sort(porCampo('fecha', 'desc'));
     const dinero = balance(c.id);
+    ponerTitulo(c.empresa || c.nombre);
 
     raiz.innerHTML = html`
         ${raw(cabecera({
-            volver: '#/clientes',
+            ruta: [{ txt: 'Clientes', href: '#/clientes' }, { txt: c.empresa || c.nombre }],
             titulo: c.empresa || c.nombre,
             sub: [c.nombre, c.email, c.telefono].filter(Boolean).join(' · '),
             acciones: `

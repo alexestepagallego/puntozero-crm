@@ -22,7 +22,21 @@ export const CONFIG = {
     // Nombre de la empresa, usado en cabeceras, portal de cliente y emails.
     EMPRESA: 'PuntoZero',
     EMPRESA_WEB: 'https://puntozerosl.es',
-    EMPRESA_EMAIL: 'hola@puntozerosl.es',
+
+    // Por dónde os escribe el cliente desde su portal.
+    // El WhatsApp es el mismo que usa la web pública.
+    EMPRESA_WHATSAPP: '34643605384',
+    // Déjalo vacío si no tenéis correo propio: entonces no se le enseña al cliente.
+    EMPRESA_EMAIL: '',
+
+    // Lo que le prometéis al cliente en su portal.
+    RESPUESTA_HORAS: 24,
+
+    // Datos fiscales para el aviso de privacidad. Son obligatorios por ley
+    // (LSSI y RGPD) en cuanto un cliente entra al portal: rellénalos.
+    EMPRESA_RAZON_SOCIAL: '',   // p. ej. 'PuntoZero S.L.'
+    EMPRESA_CIF: '',
+    EMPRESA_DIRECCION: '',      // domicilio social completo
 
     MONEDA: 'EUR',
     LOCALE: 'es-ES',

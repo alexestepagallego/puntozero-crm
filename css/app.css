@@ -393,7 +393,51 @@ tbody tr.clickable:hover { background: var(--gray-50); }
 .portal-wrap { max-width: 960px; margin: 0 auto; padding: 0 18px 80px; }
 
 /* --------------------------------------------------------------------------
-   14. VARIOS
+   14. MIGAS DE PAN
+   -------------------------------------------------------------------------- */
+.migas {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
+    font-size: .78rem; color: var(--gray-500); margin-bottom: 2px;
+}
+.migas a { color: var(--gray-500); transition: var(--t); }
+.migas a:hover { color: var(--ink); text-decoration: underline; }
+.migas .sep { color: var(--gray-300); }
+.migas .strong { color: var(--ink); font-weight: 550; }
+
+/* --------------------------------------------------------------------------
+   15. PORTAL DEL CLIENTE: contacto siempre a mano
+   -------------------------------------------------------------------------- */
+.cta-movil { display: none; }
+
+@media (max-width: 760px) {
+    .cta-movil {
+        position: fixed; left: 0; right: 0; bottom: 0; z-index: 80;
+        display: flex; gap: 8px; align-items: center;
+        padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
+        background: rgba(255, 255, 255, .96);
+        backdrop-filter: blur(8px);
+        border-top: 1px solid var(--gray-200);
+    }
+    .cta-movil .btn { flex: 1; }
+    .portal-wrap { padding-bottom: 110px; }
+}
+
+.faq details {
+    border-bottom: 1px solid var(--gray-100);
+    padding: 12px 0;
+}
+.faq details:last-child { border-bottom: none; }
+.faq summary {
+    cursor: pointer; font-size: .88rem; font-weight: 550;
+    list-style: none; display: flex; justify-content: space-between; gap: 12px;
+}
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: '+'; color: var(--gray-400); font-weight: 400; }
+.faq details[open] summary::after { content: '−'; }
+.faq p { font-size: .85rem; color: var(--gray-500); margin-top: 8px; line-height: 1.6; }
+
+/* --------------------------------------------------------------------------
+   16. VARIOS
    -------------------------------------------------------------------------- */
 .copy-field { display: flex; gap: 6px; align-items: center; }
 .copy-field input { background: var(--gray-50); font-size: .78rem; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }

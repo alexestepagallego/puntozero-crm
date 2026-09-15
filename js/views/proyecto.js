@@ -9,7 +9,7 @@ import {
     cache, adaptador, esLocal, proyecto, cliente, deProyecto, crear, editar, borrar,
     borrarProyecto, marcarPagado, progreso, FASES,
 } from '../data/index.js';
-import { cabecera, vacio, ico, tagFase, tagPago, tagVence, progresoBarra, campoCopiar, fasesLinea } from '../ui.js';
+import { cabecera, vacio, ico, tagFase, tagPago, tagVence, progresoBarra, campoCopiar, fasesLinea, ponerTitulo } from '../ui.js';
 import { abrirFicha } from '../forms.js';
 import { refrescar } from '../estado.js';
 import { tablaPagos } from './clientes.js';
@@ -25,10 +25,15 @@ export async function vistaProyecto({ id }, raiz) {
     }
     const c = cliente(p.cliente_id);
     const pct = progreso(p.id);
+    ponerTitulo(p.nombre);
 
     raiz.innerHTML = html`
         ${raw(cabecera({
-            volver: c ? `#/cliente/${c.id}` : '#/proyectos',
+            ruta: [
+                { txt: 'Clientes', href: '#/clientes' },
+                c ? { txt: c.empresa || c.nombre, href: `#/cliente/${c.id}` } : null,
+                { txt: p.nombre },
+            ].filter(Boolean),
             titulo: p.nombre,
             sub: `${c ? esc(c.empresa || c.nombre) : 'Sin cliente'} · ${esc(p.tipo || 'Proyecto')}`,
             acciones: `

@@ -1,6 +1,27 @@
 /** Piezas visuales reutilizadas por todas las vistas. */
 import { html, esc, raw, iniciales, diasHasta, fecha, plazo } from './util.js';
 import { FASES } from './data/index.js';
+import { CONFIG } from './config.js';
+
+/**
+ * Pone el título de la pestaña del navegador.
+ * Con varias pestañas abiertas —un cliente, un proyecto, los pagos— es la única
+ * forma de saber cuál es cuál sin ir mirándolas una a una.
+ */
+export function ponerTitulo(texto) {
+    document.title = texto ? `${texto} · ${CONFIG.EMPRESA} CRM` : `${CONFIG.EMPRESA} · CRM`;
+}
+
+/** Migas de pan: "Clientes › La Juana › Carta digital". */
+export function migas(pasos) {
+    const trozos = pasos.filter(Boolean).map((p, i) => {
+        const ultimo = i === pasos.length - 1;
+        return ultimo || !p.href
+            ? `<span class="${ultimo ? 'strong' : ''}">${esc(p.txt)}</span>`
+            : `<a href="${esc(p.href)}">${esc(p.txt)}</a>`;
+    });
+    return `<nav class="migas" aria-label="Dónde estás">${trozos.join('<span class="sep">›</span>')}</nav>`;
+}
 
 /* ------------------------------------------------------------ ICONOS ----- */
 
@@ -39,11 +60,12 @@ export function ico(nombre, tam = 16) {
 
 /* ------------------------------------------------------------- BLOQUES --- */
 
-export function cabecera({ titulo, sub = '', acciones = '', volver = null }) {
+export function cabecera({ titulo, sub = '', acciones = '', volver = null, ruta = null }) {
     return html`
         <div class="section-title">
             <div class="stack">
-                ${raw(volver ? `<a href="${esc(volver)}" class="btn-quiet small row gap-sm" style="margin-left:-8px">${ico('volver', 14)} Volver</a>` : '')}
+                ${raw(ruta ? migas(ruta)
+                    : volver ? `<a href="${esc(volver)}" class="btn-quiet small row gap-sm" style="margin-left:-8px">${ico('volver', 14)} Volver</a>` : '')}
                 <h1>${titulo}</h1>
                 ${raw(sub ? `<p class="muted small">${sub}</p>` : '')}
             </div>

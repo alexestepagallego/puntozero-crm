@@ -1,0 +1,7 @@
+# El CRM es una herramienta privada: no debe salir en ningún buscador.
+# La página ya lleva la etiqueta noindex; esto lo refuerza cuando el CRM
+# responda en su propio dominio (crm.puntozerosl.es), porque un robots.txt
+# solo se lee desde la raíz del dominio.
+
+User-agent: *
+Disallow: /

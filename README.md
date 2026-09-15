@@ -39,6 +39,9 @@ mientras tanto. Si te cansa verla en cada recarga, pon `UNA_VEZ_POR_SESION = tru
 - Fase del proyecto, porcentaje de avance y qué estáis haciendo ahora mismo.
 - Sus fechas, su presupuesto y sus pagos (lo cobrado y lo pendiente).
 - Próximas renovaciones de dominio y cuotas.
+- Cinco preguntas frecuentes respondidas con **sus** datos (la de "¿cuándo pago?"
+  nombra su próximo vencimiento), a quién escribir y en cuánto le respondéis.
+- En el móvil, una barra fija con el WhatsApp de PuntoZero siempre a mano.
 - Entra con el usuario y la contraseña que le dais desde su ficha (*Portal del cliente →
   Crear acceso*), **o** con un enlace secreto que le pasáis por WhatsApp, sin cuenta.
   En el CRM **no hay registro abierto**: nadie entra si vosotros no lo dais de alta.
@@ -75,6 +78,8 @@ Para el correo automático de vencimientos, [docs/AVISOS-POR-EMAIL.md](docs/AVIS
 
 ```
 index.html              Punto de entrada (una sola página) + cortina de carga
+robots.txt              Fuera de los buscadores: el CRM es privado
+img/compartir.png       Lo que se ve al mandar el enlace por WhatsApp
 css/app.css             Estilos: blanco y negro, Inter, igual que la web
 js/
   config.js             Datos de la empresa y conexión con Supabase
@@ -90,7 +95,7 @@ js/
     supabase.js         Adaptador de nube
     local.js            Adaptador de navegador (modo prueba)
     demo.js             Datos de ejemplo borrables
-  views/                Una vista por pantalla
+  views/                Una vista por pantalla (incluye el aviso de privacidad)
 sql/schema.sql          Tablas, permisos (RLS) y función del enlace secreto
 sql/002-seguridad.sql   Validación en la base y registro de accesos
 supabase/functions/

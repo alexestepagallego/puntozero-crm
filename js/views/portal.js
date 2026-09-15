@@ -7,7 +7,7 @@ import { CONFIG } from '../config.js';
 import { html, raw, esc, euros, fecha, plazo, desglose, diasHasta, toast, on, reiniciarEscuchas } from '../util.js';
 import { cache, cliente, proyectosDe, deProyecto, adaptador, esLocal, cargarTodo, progreso, FASES } from '../data/index.js';
 import { sesion, esAdmin } from '../auth.js';
-import { cabecera, vacio, ico, fasesLinea, progresoBarra, tagPago, tagVence, tagFase } from '../ui.js';
+import { cabecera, vacio, ico, fasesLinea, progresoBarra, tagPago, tagVence, tagFase, ponerTitulo } from '../ui.js';
 import { ir } from '../router.js';
 
 /* =============================================== PORTAL CON SESIÓN ======= */
@@ -34,6 +34,7 @@ export async function vistaPortal({ id } = {}, raiz) {
     if (id) {
         const datos = datosDesdeCache(id);
         if (!datos) return void (raiz.innerHTML = vacio('Proyecto no encontrado.'));
+        ponerTitulo(datos.proyecto.nombre);
         raiz.innerHTML = pantallaProyecto(datos, { volver: esAdmin() ? `#/proyecto/${id}` : '#/portal' });
         conectarDescargas(raiz);
         return;
@@ -90,6 +91,8 @@ export async function vistaPublica(tk, raiz) {
             </div>`;
         return;
     }
+
+    ponerTitulo(datos.proyecto.nombre);
 
     raiz.innerHTML = html`
         <div class="portal-wrap">
@@ -224,10 +227,86 @@ function pantallaProyecto(d, { volver = null } = {}) {
                     </div>`)}
             </div>` : '')}
 
+        ${raw(bloqueEquipo(p))}
+        ${raw(bloqueDudas(d))}
+
         <p class="center tiny muted mt-lg">
-            ¿Alguna duda? Escríbenos a <a href="mailto:${esc(CONFIG.EMPRESA_EMAIL)}">${esc(CONFIG.EMPRESA_EMAIL)}</a>
-            · ${esc(CONFIG.EMPRESA)}
-        </p>`;
+            ${esc(CONFIG.EMPRESA)} · <a href="${CONFIG.EMPRESA_WEB}" target="_blank" rel="noopener">puntozerosl.es</a>
+            · <a href="#/privacidad">Privacidad</a>
+        </p>
+
+        ${raw(barraMovil(p))}`;
+}
+
+/* ------------------------------------------------- CONTACTO Y DUDAS ------- */
+
+/** Enlace de WhatsApp con el mensaje ya escrito. No envía nada solo. */
+function enlaceWhatsapp(proyecto) {
+    if (!CONFIG.EMPRESA_WHATSAPP) return null;
+    const texto = `Hola ${CONFIG.EMPRESA}, os escribo por el proyecto "${proyecto?.nombre || ''}".`;
+    return `https://api.whatsapp.com/send?phone=${CONFIG.EMPRESA_WHATSAPP}&text=${encodeURIComponent(texto)}`;
+}
+
+/** Quién lleva el proyecto y en cuánto contestáis. */
+function bloqueEquipo(proyecto) {
+    const wa = enlaceWhatsapp(proyecto);
+    return html`
+        <div class="card">
+            <div class="row-between mb"><h2>¿Dudas con tu proyecto?</h2>
+                <span class="tag ok">Respondemos en menos de ${CONFIG.RESPUESTA_HORAS} h laborables</span></div>
+            <div class="row wrap">
+                <div class="avatar dark">PZ</div>
+                <div class="stack grow" style="min-width:0">
+                    <span class="small strong">Equipo de ${CONFIG.EMPRESA}</span>
+                    <span class="tiny muted">Estudio de software en Córdoba · tu proyecto lo llevamos nosotros de principio a fin</span>
+                </div>
+            </div>
+            <div class="row wrap mt">
+                ${raw(wa ? `<a class="btn btn-sm" href="${esc(wa)}" target="_blank" rel="noopener">Escribir por WhatsApp</a>` : '')}
+                ${raw(CONFIG.EMPRESA_EMAIL ? `<a class="btn btn-ghost btn-sm" href="mailto:${esc(CONFIG.EMPRESA_EMAIL)}">Enviar un correo</a>` : '')}
+                <a class="btn btn-ghost btn-sm" href="${CONFIG.EMPRESA_WEB}" target="_blank" rel="noopener">Ver nuestra web</a>
+            </div>
+        </div>`;
+}
+
+/** Las cinco preguntas que siempre acaban llegando por WhatsApp. */
+function bloqueDudas(datos) {
+    const pendiente = datos.pagos.filter(p => p.estado !== 'pagado')[0];
+    const preguntas = [
+        ['¿Qué significa la fase en la que está mi proyecto?',
+         'Presupuesto es antes de empezar; Diseño es cuando definimos cómo va a quedar; Desarrollo es cuando lo construimos; Revisión es cuando te lo enseñamos para que nos digas; Publicado es cuando ya está en internet funcionando; y Mantenimiento es el cuidado posterior.'],
+        ['¿Cuándo tengo que pagar?',
+         pendiente
+            ? `Tu próximo pago es «${pendiente.concepto}» y vence el ${fecha(pendiente.fecha_vencimiento)}. Lo tienes arriba, en el apartado de pagos, con su estado siempre actualizado.`
+            : 'Ahora mismo no tienes ningún pago pendiente. Cuando lo haya, aparecerá aquí arriba con su fecha, sin sorpresas.'],
+        ['¿Puedo pedir cambios cuando ya esté publicado?',
+         'Sí. Los cambios pequeños entran en el mantenimiento si lo tienes contratado. Si es algo más grande, te lo presupuestamos aparte antes de tocar nada: nunca te llega una factura que no hayas aprobado.'],
+        ['¿Quién se encarga de renovar el dominio?',
+         'Si el dominio lo gestionamos nosotros, lo verás arriba en «Próximas renovaciones» y te avisamos antes de que caduque. Si está a tu nombre, el aviso te llegará a ti desde donde lo tengas contratado.'],
+        ['¿Cómo cambio mi contraseña?',
+         'Si entraste con usuario y contraseña, dentro del CRM la cambias abajo a la izquierda, en «Cambiar mi contraseña». Si entraste por un enlace que te pasamos, no necesitas contraseña: guarda ese enlace y listo.'],
+    ];
+
+    return html`
+        <div class="card faq">
+            <h2 class="mb">Preguntas frecuentes</h2>
+            ${preguntas.map(([q, a]) => html`
+                <details>
+                    <summary>${q}</summary>
+                    <p>${a}</p>
+                </details>`)}
+        </div>`;
+}
+
+/** Barra fija en el móvil: el contacto siempre a un dedo. */
+function barraMovil(proyecto) {
+    const wa = enlaceWhatsapp(proyecto);
+    if (!wa) return '';
+    return html`
+        <div class="cta-movil">
+            <span class="tiny muted grow">¿Alguna duda?</span>
+            <a class="btn btn-sm" href="${wa}" target="_blank" rel="noopener">Escríbenos por WhatsApp</a>
+        </div>`;
 }
 
 /* =========================================================== AUXILIARES == */

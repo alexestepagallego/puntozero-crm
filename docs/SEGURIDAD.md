@@ -71,7 +71,8 @@ que antes verifica contra la base que quien llama es administrador.
 
 ## 9. Cookies
 
-El CRM no usa cookies propias. La sesión vive en el almacenamiento del navegador
+El portal lo dice por escrito en su aviso de privacidad (`#/privacidad`): no hay
+cookies de seguimiento ni analítica. El CRM no usa cookies propias. La sesión vive en el almacenamiento del navegador
 con caducidad de 1 hora y rotación de refresco. Al salir se borra.
 
 ## 10. Contraseñas con hash
