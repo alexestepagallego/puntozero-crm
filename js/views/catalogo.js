@@ -4,7 +4,7 @@ import { CONFIG } from '../config.js';
 import { cache, borrar } from '../data/index.js';
 import { cabecera, vacio, ico } from '../ui.js';
 import { abrirFicha } from '../forms.js';
-import { refrescar } from '../estado.js';
+import { repintar } from '../estado.js';
 
 const ETIQUETA_UNIDAD = {
     'único': 'pago único', mensual: 'al mes', trimestral: 'al trimestre', anual: 'al año',
@@ -58,7 +58,7 @@ export async function vistaCatalogo(_params, raiz) {
     on(raiz, 'click', '[data-borrar]', async (_ev, el) => {
         if (!await confirmar('¿Eliminar este servicio del catálogo?')) return;
         await borrar('servicios', el.dataset.borrar);
-        refrescar();
+        repintar();
     });
     on(raiz, 'click', '[data-usar]', (_ev, el) => {
         const s = cache.servicios.find(x => x.id === el.dataset.usar);

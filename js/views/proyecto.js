@@ -11,7 +11,7 @@ import {
 } from '../data/index.js';
 import { cabecera, vacio, ico, tagFase, tagPago, tagVence, progresoBarra, campoCopiar, fasesLinea, ponerTitulo } from '../ui.js';
 import { abrirFicha } from '../forms.js';
-import { refrescar } from '../estado.js';
+import { repintar } from '../estado.js';
 import { tablaPagos } from './clientes.js';
 
 let pestana = 'tablero';
@@ -73,7 +73,7 @@ export async function vistaProyecto({ id }, raiz) {
     raiz.querySelector('#cambiar-fase').addEventListener('change', async (ev) => {
         await editar('proyectos', p.id, { estado: ev.target.value });
         toast(`Fase: ${ev.target.value}`);
-        refrescar();
+        repintar();
     });
 
     on(raiz, 'click', '[data-editar]', () => abrirFicha('proyecto', { valores: p }));
@@ -181,7 +181,7 @@ function conectarTablero(p, panel, idFinal) {
         const columnaId = b.dataset.add;
         abrirFicha('tarjeta', {
             fijos: { proyecto_id: p.id, columna_id: columnaId, orden: tarjetasDe(columnaId).length, completada: columnaId === idFinal },
-            alTerminar: async () => { await refrescar(); },
+            alTerminar: async () => { await repintar(); },
         });
     }));
 
@@ -194,7 +194,7 @@ function conectarTablero(p, panel, idFinal) {
             campos: [{ name: 'nombre', label: 'Nombre de la columna', requerido: true, placeholder: 'Pendiente de cliente' }],
             onGuardar: async ({ nombre }) => {
                 await crear('columnas', { proyecto_id: p.id, nombre, orden: columnasDe(p).length });
-                await refrescar();
+                await repintar();
             },
         });
     });
@@ -221,7 +221,7 @@ async function guardarOrden(cuerpo, idFinal) {
         if (String(t.columna_id) === String(columnaId) && t.orden === orden && t.completada === completada) continue;
         await editar('tarjetas', id, { columna_id: columnaId, orden, completada });
     }
-    await refrescar();
+    await repintar();
 }
 
 function abrirTarjeta(id, p) {
@@ -251,14 +251,14 @@ function abrirTarjeta(id, p) {
     m.querySelector('[data-visible]').addEventListener('click', async () => {
         await editar('tarjetas', t.id, { visible_cliente: t.visible_cliente === false });
         m.cerrar();
-        refrescar();
+        repintar();
     });
     m.querySelector('[data-borrar]').addEventListener('click', async () => {
         if (!await confirmar('¿Eliminar esta tarea?')) return;
         await borrar('tarjetas', t.id);
         m.cerrar();
         toast('Tarea eliminada');
-        refrescar();
+        repintar();
     });
 }
 
@@ -282,7 +282,7 @@ function menuColumna(id, p) {
             titulo: 'Renombrar columna',
             campos: [{ name: 'nombre', label: 'Nombre', requerido: true }],
             valores: { nombre: col.nombre },
-            onGuardar: async ({ nombre }) => { await editar('columnas', col.id, { nombre }); await refrescar(); },
+            onGuardar: async ({ nombre }) => { await editar('columnas', col.id, { nombre }); await repintar(); },
         });
     });
 
@@ -294,7 +294,7 @@ function menuColumna(id, p) {
         await editar('columnas', columnas[i].id, { orden: j });
         await editar('columnas', columnas[j].id, { orden: i });
         m.cerrar();
-        refrescar();
+        repintar();
     };
     m.querySelector('[data-izq]').addEventListener('click', () => mover(-1));
     m.querySelector('[data-der]').addEventListener('click', () => mover(1));
@@ -305,7 +305,7 @@ function menuColumna(id, p) {
         for (const t of tarjetasDe(col.id)) await borrar('tarjetas', t.id);
         await borrar('columnas', col.id);
         m.cerrar();
-        refrescar();
+        repintar();
     });
 }
 
@@ -356,7 +356,7 @@ function pintarResumen(p, panel) {
         await borrarProyecto(p.id);
         toast('Proyecto eliminado');
         location.hash = '#/proyectos';
-        refrescar();
+        repintar();
     });
 }
 
@@ -397,14 +397,14 @@ function pintarDinero(p, panel) {
     on(panel, 'click', '[data-pagar]', async (_ev, el) => {
         await marcarPagado(cache.pagos.find(x => x.id === el.dataset.pagar));
         toast('Pago cobrado');
-        refrescar();
+        repintar();
     });
     on(panel, 'click', '[data-editar-pago]', (_ev, el) =>
         abrirFicha('pago', { valores: cache.pagos.find(x => x.id === el.dataset.editarPago) }));
     on(panel, 'click', '[data-borrar-pago]', async (_ev, el) => {
         if (!await confirmar('¿Eliminar este pago?')) return;
         await borrar('pagos', el.dataset.borrarPago);
-        refrescar();
+        repintar();
     });
 }
 
@@ -449,7 +449,7 @@ function pintarAccesos(p, panel) {
     on(panel, 'click', '[data-borrar-acceso]', async (_ev, el) => {
         if (!await confirmar('¿Eliminar este acceso?')) return;
         await borrar('accesos', el.dataset.borrarAcceso);
-        refrescar();
+        repintar();
     });
 }
 
@@ -496,7 +496,7 @@ function pintarArchivos(p, panel) {
                 ruta, tamano: fichero.size, visible_cliente: true,
             });
             toast('Archivo subido');
-            refrescar();
+            repintar();
         } catch (e) {
             toast(e.message || 'No se ha podido subir', 'bad');
         }
@@ -517,7 +517,7 @@ function pintarArchivos(p, panel) {
         const a = cache.archivos.find(x => String(x.id) === String(el.dataset.borrarArchivo));
         await adaptador.borrarArchivo?.(a.ruta).catch(() => {});
         await borrar('archivos', a.id);
-        refrescar();
+        repintar();
     });
 }
 
@@ -545,7 +545,7 @@ function pintarNotas(p, panel) {
     on(panel, 'click', '[data-borrar-nota]', async (_ev, el) => {
         if (!await confirmar('¿Eliminar esta nota?')) return;
         await borrar('notas', el.dataset.borrarNota);
-        refrescar();
+        repintar();
     });
 }
 
@@ -572,6 +572,6 @@ function enlaceCliente(p) {
         await editar('proyectos', p.id, { token_acceso: token(10) });
         toast('Enlace regenerado: el anterior deja de funcionar');
         this.closest('.modal-scrim').cerrar();
-        refrescar();
+        repintar();
     });
 }

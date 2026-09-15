@@ -6,7 +6,7 @@ import {
 } from '../data/index.js';
 import { cabecera, vacio, stat, ico, avatar, tagFase, tagPago, tagVence, progresoBarra, campoCopiar, ponerTitulo } from '../ui.js';
 import { abrirFicha } from '../forms.js';
-import { refrescar } from '../estado.js';
+import { repintar } from '../estado.js';
 import { modal } from '../util.js';
 
 /* ------------------------------------------------------------- LISTADO --- */
@@ -223,7 +223,7 @@ export async function vistaCliente({ id }, raiz) {
     on(raiz, 'click', '[data-pagar]', async (_ev, el) => {
         await marcarPagado(cache.pagos.find(p => p.id === el.dataset.pagar));
         toast('Pago marcado como cobrado');
-        refrescar();
+        repintar();
     });
     on(raiz, 'click', '[data-editar-pago]', (_ev, el) =>
         abrirFicha('pago', { valores: cache.pagos.find(p => p.id === el.dataset.editarPago) }));
@@ -234,7 +234,7 @@ export async function vistaCliente({ id }, raiz) {
             if (!await confirmar('¿Seguro que quieres eliminar este registro?')) return;
             await borrar(tabla, el.getAttribute(attr));
             toast('Eliminado');
-            refrescar();
+            repintar();
         });
     }
 
@@ -244,7 +244,7 @@ export async function vistaCliente({ id }, raiz) {
         await borrarCliente(c.id);
         toast('Cliente eliminado');
         location.hash = '#/clientes';
-        refrescar();
+        repintar();
     });
 }
 

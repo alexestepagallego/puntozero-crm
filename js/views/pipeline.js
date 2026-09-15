@@ -3,7 +3,7 @@ import { html, raw, esc, euros, fecha, on, confirmar, toast, reiniciarEscuchas }
 import { cache, ESTADOS_LEAD, borrar, editar, crear } from '../data/index.js';
 import { cabecera, vacio, stat, ico } from '../ui.js';
 import { abrirFicha } from '../forms.js';
-import { refrescar } from '../estado.js';
+import { repintar } from '../estado.js';
 
 export async function vistaPipeline(_params, raiz) {
     reiniciarEscuchas(raiz);
@@ -69,7 +69,7 @@ export async function vistaPipeline(_params, raiz) {
             if (!arrastrado) return;
             await editar('leads', arrastrado, { estado: cuerpo.dataset.destino });
             arrastrado = null;
-            refrescar();
+            repintar();
         });
     });
 
@@ -106,7 +106,7 @@ function abrirLead(id) {
             if (!await confirmar('¿Eliminar esta oportunidad?')) return;
             await borrar('leads', l.id);
             m.cerrar();
-            refrescar();
+            repintar();
         });
         m.querySelector('[data-convertir]').addEventListener('click', async () => {
             const nuevo = await crear('clientes', {
@@ -118,7 +118,7 @@ function abrirLead(id) {
             m.cerrar();
             toast('Cliente creado desde la oportunidad');
             location.hash = `#/cliente/${nuevo.id}`;
-            refrescar();
+            repintar();
         });
     });
 }

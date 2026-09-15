@@ -9,7 +9,7 @@ import {
     cache, crear, editar, crearProyecto, FASES, TIPOS_PROYECTO,
     PERIODICIDADES, ESTADOS_LEAD, TIPOS_ACCESO,
 } from './data/index.js';
-import { refrescar } from './estado.js';
+import { repintar } from './estado.js';
 import { sesion } from './auth.js';
 
 const opcionesClientes = () => cache.clientes
@@ -221,7 +221,7 @@ export function abrirFicha(tipo, { valores = {}, fijos = {}, alTerminar } = {}) 
                 toast('Creado');
             }
             if (alTerminar) await alTerminar(resultado);
-            else await refrescar();
+            else await repintar();
         },
     });
 }

@@ -3,10 +3,10 @@
  */
 import { CONFIG, modo } from './config.js';
 import { sesion, esAdmin, iniciarSesionGuardada, alCambiarSesion, salir, cambiarClave } from './auth.js';
-import { cargarTodo, cache, alertas, recargarAdaptador } from './data/index.js';
+import { cargarTodo, cache, alertas, recargarAdaptador, alFallarLaCarga } from './data/index.js';
 import { ruta, arrancar, alCambiar, actual, ir } from './router.js';
 import { registrarRefrescoNav } from './estado.js';
-import { $, $$, html, raw, esc, on, copiar, toast, formulario } from './util.js';
+import { $, $$, html, raw, esc, on, copiar, toast, formulario, modal } from './util.js';
 import { ico, avatar, ponerTitulo } from './ui.js';
 
 import { vistaPanel } from './views/panel.js';
@@ -287,8 +287,30 @@ function registrarRutas() {
 
 /* -------------------------------------------------------------- INICIO --- */
 
+/**
+ * Qué hacer cuando los datos no llegan. Antes esto no existía: el CRM se
+ * quedaba vacío en silencio y parecía que no funcionaba nada.
+ */
+function avisarDeFallos(fallos) {
+    const caducada = fallos.some(f => /sesión ha caducado|jwt|token/i.test(f.mensaje));
+    if (caducada) {
+        if (document.querySelector('[data-sesion-caducada]')) return;
+        modal({
+            titulo: 'Tu sesión ha caducado',
+            cuerpo: html`<p class="small">Por seguridad, la sesión dura un rato limitado.
+                Vuelve a entrar y sigues donde lo dejaste. No se ha perdido nada de lo guardado.</p>
+                <span data-sesion-caducada hidden></span>`,
+            acciones: '<button class="btn" onclick="location.reload()">Volver a entrar</button>',
+        });
+        return;
+    }
+    toast(`No se han podido cargar ${fallos.length === 1 ? fallos[0].tabla : fallos.length + ' apartados'}. Revisa la conexión.`, 'bad');
+    console.warn('Fallos al cargar:', fallos);
+}
+
 async function inicio() {
     recargarAdaptador();
+    alFallarLaCarga(avisarDeFallos);
 
     // Acceso por enlace secreto: no necesita sesión ni estructura de la app.
     const camino = actual();

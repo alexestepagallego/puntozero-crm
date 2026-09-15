@@ -21,11 +21,34 @@ export async function supa() {
     return cliente;
 }
 
+/**
+ * Corta una petición que se queda colgada. Sin esto, con la conexión a medias
+ * el CRM se queda esperando para siempre y parece que el botón no hace nada.
+ */
+const LIMITE_MS = 15000;
+
+async function conTiempoLimite(promesa, que = 'la operación') {
+    let reloj;
+    const tope = new Promise((_, rechazar) => {
+        reloj = setTimeout(() => rechazar(new Error(`Sin respuesta al ${que}. Revisa tu conexión e inténtalo otra vez.`)), LIMITE_MS);
+    });
+    try {
+        return await Promise.race([promesa, tope]);
+    } finally {
+        clearTimeout(reloj);
+    }
+}
+
 function revienta(error) {
     if (!error) return;
     const mensaje = error.message || 'Error de conexión';
     if (/row-level security|permission denied/i.test(mensaje)) {
         throw new Error('No tienes permiso para esta operación');
+    }
+    if (/jwt|token|expired|refresh/i.test(mensaje)) {
+        const e = new Error('Tu sesión ha caducado. Vuelve a entrar.');
+        e.sesionCaducada = true;
+        throw e;
     }
     throw new Error(mensaje);
 }
@@ -49,7 +72,7 @@ export const adaptadorSupabase = {
             }
         }
         if (opciones.orden) q = q.order(opciones.orden, { ascending: opciones.dir !== 'desc' });
-        const { data, error } = await q;
+        const { data, error } = await conTiempoLimite(q, `leer ${tabla}`);
         revienta(error);
         return data || [];
     },
@@ -63,28 +86,28 @@ export const adaptadorSupabase = {
 
     async insert(tabla, fila) {
         const sb = await supa();
-        const { data, error } = await sb.from(tabla).insert(fila).select().single();
+        const { data, error } = await conTiempoLimite(sb.from(tabla).insert(fila).select().single(), 'guardar');
         revienta(error);
         return data;
     },
 
     async insertMany(tabla, filas) {
         const sb = await supa();
-        const { data, error } = await sb.from(tabla).insert(filas).select();
+        const { data, error } = await conTiempoLimite(sb.from(tabla).insert(filas).select(), 'guardar');
         revienta(error);
         return data || [];
     },
 
     async update(tabla, id, parche) {
         const sb = await supa();
-        const { data, error } = await sb.from(tabla).update(parche).eq('id', id).select().single();
+        const { data, error } = await conTiempoLimite(sb.from(tabla).update(parche).eq('id', id).select().single(), 'guardar');
         revienta(error);
         return data;
     },
 
     async remove(tabla, id) {
         const sb = await supa();
-        const { error } = await sb.from(tabla).delete().eq('id', id);
+        const { error } = await conTiempoLimite(sb.from(tabla).delete().eq('id', id), 'eliminar');
         revienta(error);
     },
 

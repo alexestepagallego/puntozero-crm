@@ -7,7 +7,7 @@ import {
 } from '../data/index.js';
 import { cabecera, vacio, stat, ico, tagPago, tagVence } from '../ui.js';
 import { abrirFicha } from '../forms.js';
-import { refrescar } from '../estado.js';
+import { repintar } from '../estado.js';
 import { tablaPagos } from './clientes.js';
 
 /* ============================================================== PAGOS ==== */
@@ -55,14 +55,14 @@ export async function vistaPagos(_params, raiz) {
     on(raiz, 'click', '[data-pagar]', async (_ev, el) => {
         await marcarPagado(cache.pagos.find(p => p.id === el.dataset.pagar));
         toast('Pago cobrado');
-        refrescar();
+        repintar();
     });
     on(raiz, 'click', '[data-editar-pago]', (_ev, el) =>
         abrirFicha('pago', { valores: cache.pagos.find(p => p.id === el.dataset.editarPago) }));
     on(raiz, 'click', '[data-borrar-pago]', async (_ev, el) => {
         if (!await confirmar('¿Eliminar este pago?')) return;
         await borrar('pagos', el.dataset.borrarPago);
-        refrescar();
+        repintar();
     });
 }
 
@@ -123,12 +123,12 @@ export async function vistaCuotas(_params, raiz) {
         const s = cache.suscripciones.find(x => x.id === el.dataset.renovar);
         await renovarSuscripcion(s);
         toast(`Cobro registrado. Siguiente: ${fecha(sumarPeriodo(s.proxima_fecha, s.periodicidad))}`);
-        refrescar();
+        repintar();
     });
     on(raiz, 'click', '[data-borrar]', async (_ev, el) => {
         if (!await confirmar('¿Eliminar esta cuota recurrente?')) return;
         await borrar('suscripciones', el.dataset.borrar);
-        refrescar();
+        repintar();
     });
 }
 
@@ -188,12 +188,12 @@ export async function vistaDominios(_params, raiz) {
         const nueva = sumarPeriodo(d.fecha_renovacion, 'anual');
         await editar('dominios', d.id, { fecha_renovacion: nueva });
         toast(`${d.dominio} renovado hasta ${fecha(nueva)}`);
-        refrescar();
+        repintar();
     });
     on(raiz, 'click', '[data-borrar]', async (_ev, el) => {
         if (!await confirmar('¿Eliminar este dominio del CRM?')) return;
         await borrar('dominios', el.dataset.borrar);
-        refrescar();
+        repintar();
     });
     on(raiz, 'click', '[data-ics]', () => {
         const eventos = dominios.filter(d => d.fecha_renovacion).map(d => ({

@@ -52,10 +52,28 @@ const TABLAS = ['clientes', 'proyectos', 'columnas', 'tarjetas', 'pagos', 'suscr
 
 export const cache = Object.fromEntries(TABLAS.map(t => [t, []]));
 
+/**
+ * Quién se entera de que una carga ha fallado. Antes los errores se tragaban en
+ * silencio y el CRM se quedaba vacío sin decir nada: parecía que no funcionaba
+ * nada cuando en realidad era la sesión caducada o la conexión.
+ */
+let avisarDeFallos = () => {};
+export function alFallarLaCarga(fn) { avisarDeFallos = fn; }
+
 /** Recarga de la base todo lo que el usuario actual tenga permiso de ver. */
 export async function cargarTodo() {
-    const resultados = await Promise.all(TABLAS.map(t => adaptador.list(t).catch(() => [])));
-    TABLAS.forEach((t, i) => { cache[t] = resultados[i]; });
+    const fallos = [];
+    const resultados = await Promise.all(TABLAS.map(async (tabla) => {
+        try {
+            return await adaptador.list(tabla);
+        } catch (e) {
+            fallos.push({ tabla, mensaje: e.message });
+            return null;   // null = no tocar lo que ya había en memoria
+        }
+    }));
+
+    TABLAS.forEach((t, i) => { if (resultados[i]) cache[t] = resultados[i]; });
+    if (fallos.length) avisarDeFallos(fallos);
     return cache;
 }
 

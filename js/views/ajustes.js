@@ -5,7 +5,7 @@ import { adaptador, esLocal, cache, eventosCalendario } from '../data/index.js';
 import { cargarEjemplos, borrarEjemplos, hayEjemplos } from '../data/demo.js';
 import { cabecera, ico, stat } from '../ui.js';
 import { abrirConexion } from './login.js';
-import { refrescar } from '../estado.js';
+import { refrescar, repintar } from '../estado.js';
 import { sesion } from '../auth.js';
 
 export async function vistaAjustes(_params, raiz) {
@@ -150,7 +150,7 @@ export async function vistaAjustes(_params, raiz) {
         try {
             await adaptador.importar(JSON.parse(await fichero.text()));
             toast('Copia restaurada');
-            refrescar();
+            refrescar();   // la copia cambia todo de golpe: hay que releer
         } catch {
             toast('El archivo no es una copia válida', 'bad');
         }
@@ -159,14 +159,14 @@ export async function vistaAjustes(_params, raiz) {
     on(raiz, 'click', '[data-cargar-demo]', async () => {
         await cargarEjemplos();
         toast('Datos de ejemplo cargados');
-        refrescar();
+        repintar();
     });
 
     on(raiz, 'click', '[data-borrar-demo]', async () => {
         if (!await confirmar('Se eliminarán solo los clientes y proyectos de ejemplo.')) return;
         await borrarEjemplos();
         toast('Datos de ejemplo borrados');
-        refrescar();
+        repintar();
     });
 
     on(raiz, 'click', '[data-vaciar]', async () => {
