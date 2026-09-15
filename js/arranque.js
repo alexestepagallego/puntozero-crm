@@ -5,6 +5,21 @@
  * scripts en línea, que es justo por donde entran los ataques de inyección.
  */
 (function () {
+    // Anti-clickjacking. GitHub Pages no deja enviar la cabecera que impide
+    // incrustar la página en un iframe (frame-ancestors), así que lo cortamos
+    // desde aquí: si el CRM se abre dentro de otra web, se escapa del marco.
+    // Evita que una web maligna lo superponga para robar clics del usuario.
+    try {
+        if (window.top !== window.self) {
+            window.top.location = window.self.location.href;
+        }
+    } catch (e) {
+        // El navegador no nos deja ni leer window.top: seguro que estamos
+        // enmarcados por otro origen. Escondemos todo antes que exponernos.
+        document.documentElement.style.display = 'none';
+        throw new Error('Bloqueado: el CRM no puede abrirse dentro de otra web.');
+    }
+
     document.documentElement.classList.add('pz-cargando');
     // Red de seguridad por si js/loader.js no llega a cargar (404, red
     // caída): sin esto la cortina taparía el CRM para siempre. El tope
