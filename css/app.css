@@ -220,7 +220,13 @@ select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmln
     background: var(--white);
     padding: 16px;
 }
+/* Tarjetas apiladas una debajo de otra (Ajustes, ficha de cliente, portal). */
 .card + .card { margin-top: 12px; }
+
+/* ...pero dentro de una rejilla el espacio ya lo pone `gap`. Si además se
+   aplicara ese margen, cada tarjeta menos la primera bajaría 12 px y se
+   quedaría 12 px más corta que sus compañeras de fila. */
+.grid > .card + .card { margin-top: 0; }
 .card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
 .card-link { transition: var(--t); display: block; }
 .card-link:hover { border-color: var(--gray-400); box-shadow: var(--shadow); }
