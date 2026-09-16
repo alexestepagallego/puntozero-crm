@@ -39,9 +39,29 @@ async function conTiempoLimite(promesa, que = 'la operación') {
     }
 }
 
+/**
+ * Traduce cada regla de validación de la base a un aviso que se entienda.
+ * Cuando una regla salta, Postgres devuelve el nombre técnico de la regla
+ * (p. ej. accesos_url_esquema); aquí lo convertimos en una frase útil.
+ */
+const AVISOS_VALIDACION = [
+    [/url_esquema/,        'El enlace debe empezar por http:// o https://'],
+    [/email_format|email_formato/, 'El correo no tiene un formato válido'],
+    [/importe_sano|precio_sano|coste_sano|valor_sano/, 'El importe no es válido (debe estar entre 0 y 1.000.000)'],
+    [/iva_sano|irpf_sano/, 'El porcentaje debe estar entre 0 y 100'],
+    [/progreso_sano/,      'El progreso debe estar entre 0 y 100'],
+    [/dominios_formato/,   'El dominio no tiene un formato válido (ej. micliente.es)'],
+    [/estado_valido/,      'Ese estado no es uno de los permitidos'],
+    [/periodo_valido/,     'Esa periodicidad no es válida'],
+    [/unidad_valida/,      'Ese tipo de cobro no es válido'],
+    [/_largo/,             'Alguno de los textos es demasiado largo'],
+    [/token_formato/,      'El enlace de acceso no tiene un formato válido'],
+];
+
 function revienta(error) {
     if (!error) return;
     const mensaje = error.message || 'Error de conexión';
+
     if (/row-level security|permission denied/i.test(mensaje)) {
         throw new Error('No tienes permiso para esta operación');
     }
@@ -49,6 +69,16 @@ function revienta(error) {
         const e = new Error('Tu sesión ha caducado. Vuelve a entrar.');
         e.sesionCaducada = true;
         throw e;
+    }
+    // Una regla de validación de la base: mensaje claro en vez del técnico.
+    if (/violates check constraint|23514/i.test(mensaje) || error.code === '23514') {
+        for (const [patron, texto] of AVISOS_VALIDACION) {
+            if (patron.test(mensaje)) throw new Error(texto);
+        }
+        throw new Error('Hay un dato que no cumple el formato esperado. Revisa el formulario.');
+    }
+    if (/duplicate key|23505/i.test(mensaje) || error.code === '23505') {
+        throw new Error('Ya existe un registro con ese valor');
     }
     throw new Error(mensaje);
 }

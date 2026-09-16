@@ -202,12 +202,16 @@ export function abrirFicha(tipo, { valores = {}, fijos = {}, alTerminar } = {}) 
         }
     }
 
+    // Qué campos son enlaces, para completarles el https:// si falta.
+    const camposUrl = campos.filter(c => c.tipo === 'url').map(c => c.name);
+
     return formulario({
         titulo: `${editando ? 'Editar' : 'Nuev' + (['nota', 'cuota', 'tarea', 'oportunidad'].includes(ficha.titulo) ? 'a' : 'o')} ${ficha.titulo}`,
         campos,
         valores: iniciales,
         textoOk: editando ? 'Guardar cambios' : 'Crear',
         onGuardar: async (datos) => {
+            for (const nombre of camposUrl) datos[nombre] = normalizarUrl(datos[nombre]);
             const fila = { ...datos, ...fijos };
             let resultado;
             if (editando) {
@@ -224,4 +228,15 @@ export function abrirFicha(tipo, { valores = {}, fijos = {}, alTerminar } = {}) 
             else await repintar();
         },
     });
+}
+
+/**
+ * Completa un enlace escrito a mano. La gente teclea "ionos.es", pero la base
+ * exige que empiece por http(s):// (por seguridad). Le ponemos https:// delante
+ * si falta, para que guardar un acceso no falle por una tontería.
+ */
+function normalizarUrl(valor) {
+    const texto = String(valor || '').trim();
+    if (!texto) return null;
+    return /^https?:\/\//i.test(texto) ? texto : 'https://' + texto;
 }
