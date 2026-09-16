@@ -120,7 +120,7 @@ export const FICHAS = {
             { name: 'tipo', label: 'Tipo', tipo: 'select', opciones: TIPOS_ACCESO, valor: 'Hosting' },
             { name: 'cliente_id', label: 'Cliente', tipo: 'select', requerido: true, opciones: opcionesClientes(), vacio: 'Elige cliente…' },
             { name: 'proyecto_id', label: 'Proyecto (opcional)', tipo: 'select', opciones: opcionesProyectos(), vacio: 'Sin proyecto' },
-            { name: 'url', label: 'Enlace', tipo: 'url', placeholder: 'https://…' },
+            { name: 'url', label: 'Enlace', esEnlace: true, placeholder: 'ionos.es o https://…', pista: 'Se completa con https:// si no lo pones' },
             { name: 'usuario', label: 'Usuario / cuenta', pista: 'No guardes contraseñas aquí: usa un gestor de claves' },
             { name: 'notas', label: 'Notas', tipo: 'textarea', filas: 2 },
         ],
@@ -203,7 +203,7 @@ export function abrirFicha(tipo, { valores = {}, fijos = {}, alTerminar } = {}) 
     }
 
     // Qué campos son enlaces, para completarles el https:// si falta.
-    const camposUrl = campos.filter(c => c.tipo === 'url').map(c => c.name);
+    const camposUrl = campos.filter(c => c.esEnlace).map(c => c.name);
 
     return formulario({
         titulo: `${editando ? 'Editar' : 'Nuev' + (['nota', 'cuota', 'tarea', 'oportunidad'].includes(ficha.titulo) ? 'a' : 'o')} ${ficha.titulo}`,
