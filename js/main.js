@@ -108,7 +108,8 @@ export function montarShell() {
                 </header>
                 <main class="view" id="view"></main>
             </div>
-        </div>`;
+        </div>
+        ${raw(esAdmin() ? `<button class="asist-lanzador" id="btn-asistente" title="Asistente (IA)">${ico('chat')}</button>` : '')}`;
 
     shellMontado = true;
     conectarShell();
@@ -136,6 +137,7 @@ function conectarShell() {
         },
     }));
     $('#btn-nuevo')?.addEventListener('click', () => import('./views/nuevo.js').then(m => m.menuNuevo()));
+    $('#btn-asistente')?.addEventListener('click', () => import('./views/asistente.js').then(m => m.alternarAsistente()));
 
     const buscador = $('#buscador');
     if (buscador) {

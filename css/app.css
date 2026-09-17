@@ -474,3 +474,66 @@ tbody tr.clickable:hover { background: var(--gray-50); }
     .sidebar, .topbar, .btn, .toasts { display: none !important; }
     .view { padding: 0; }
 }
+
+/* --------------------------------------------------------------------------
+   15. ASISTENTE (IA)
+   -------------------------------------------------------------------------- */
+.asist-lanzador {
+    position: fixed; right: 20px; bottom: 20px; z-index: 80;
+    width: 52px; height: 52px; border-radius: 50%;
+    background: var(--black); color: var(--white);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 6px 20px rgba(10,10,10,.28); transition: var(--t);
+}
+.asist-lanzador:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(10,10,10,.34); }
+.asist-lanzador svg { width: 22px; height: 22px; }
+
+#pz-asistente {
+    position: fixed; right: 20px; bottom: 20px; z-index: 90;
+    width: min(400px, calc(100vw - 32px)); height: min(600px, calc(100vh - 40px));
+    background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--r);
+    box-shadow: 0 20px 60px rgba(10,10,10,.28);
+    display: flex; flex-direction: column; overflow: hidden;
+    animation: pop .18s ease;
+}
+.asist-cab { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-bottom: 1px solid var(--gray-200); flex: none; }
+.asist-punto { width: 9px; height: 9px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 3px var(--ok-bg); }
+
+.asist-cuerpo { flex: 1 1 auto; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+
+.asist-bienvenida { color: var(--gray-500); }
+.asist-ejemplos { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
+.asist-ejemplo { text-align: left; padding: 9px 11px; border: 1px solid var(--gray-200); border-radius: var(--r-sm); font-size: .82rem; color: var(--gray-700); transition: var(--t); }
+.asist-ejemplo:hover { border-color: var(--black); background: var(--gray-50); }
+
+.asist-msg { display: flex; }
+.asist-msg.asist-yo { justify-content: flex-end; }
+.asist-burbuja { max-width: 85%; padding: 9px 12px; border-radius: 14px; font-size: .86rem; line-height: 1.45; white-space: pre-wrap; word-break: break-word; }
+.asist-yo .asist-burbuja { background: var(--black); color: var(--white); border-bottom-right-radius: 4px; }
+.asist-ia .asist-burbuja { background: var(--gray-100); color: var(--ink); border-bottom-left-radius: 4px; }
+
+.asist-pensando { display: inline-flex; gap: 4px; align-items: center; }
+.asist-pensando span { width: 6px; height: 6px; border-radius: 50%; background: var(--gray-400); animation: asist-blink 1.2s infinite; }
+.asist-pensando span:nth-child(2) { animation-delay: .2s; }
+.asist-pensando span:nth-child(3) { animation-delay: .4s; }
+@keyframes asist-blink { 0%, 60%, 100% { opacity: .3 } 30% { opacity: 1 } }
+
+.asist-acciones { margin-top: 10px; padding: 10px; background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--r-sm); }
+.asist-acciones.aplicado { display: flex; align-items: center; gap: 6px; color: var(--ok); background: var(--ok-bg); border-color: transparent; }
+.asist-acciones.cancelado { background: transparent; border-style: dashed; }
+.asist-lista { display: flex; flex-direction: column; gap: 6px; margin: 8px 0; }
+.asist-lista li { display: flex; align-items: flex-start; gap: 7px; font-size: .82rem; line-height: 1.4; }
+.asist-op { flex: none; width: 16px; height: 16px; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; font-size: .7rem; font-weight: 700; }
+.asist-op.crear { background: var(--ok-bg); color: var(--ok); }
+.asist-op.editar { background: var(--info-bg); color: #2c3e63; }
+.asist-op.borrar { background: var(--bad-bg); color: var(--bad); }
+.asist-error { display: block; margin-top: 6px; color: var(--bad); font-size: .8rem; white-space: pre-wrap; }
+
+.asist-pie { display: flex; gap: 8px; align-items: flex-end; padding: 12px; border-top: 1px solid var(--gray-200); flex: none; }
+.asist-pie textarea { flex: 1 1 auto; resize: none; min-height: 40px; max-height: 120px; border-radius: 20px; padding: 9px 14px; line-height: 1.4; }
+.asist-pie .btn-icon { border-radius: 50%; flex: none; }
+
+@media (max-width: 560px) {
+    #pz-asistente { right: 0; bottom: 0; width: 100vw; height: 100dvh; border-radius: 0; }
+    .asist-lanzador { right: 16px; bottom: 16px; }
+}

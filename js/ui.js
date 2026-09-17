@@ -49,6 +49,7 @@ const ICONOS = {
     check: '<path d="M20 6L9 17l-5-5"/>',
     menu: '<path d="M3 6h18M3 12h18M3 18h18"/>',
     llave: '<circle cx="7.5" cy="15.5" r="4.5"/><path d="M10.7 12.3 21 2M17 6l3 3M14 9l3 3"/>',
+    chat: '<path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-3.8-.9L3 21l1.9-5.7A8.38 8.38 0 0 1 4 11.5 8.5 8.5 0 0 1 12.5 3 8.38 8.38 0 0 1 21 11.5z"/><path d="M8.5 11.5h.01M12.5 11.5h.01M16.5 11.5h.01"/>',
 };
 
 /** Devuelve un icono SVG listo para insertar (ya es HTML seguro). */

@@ -288,3 +288,89 @@ export function eventosCalendario() {
         descripcion: a.detalle,
     }));
 }
+
+/* ====================================================== ASISTENTE (IA) ==== */
+
+/** Tablas que el asistente puede tocar. Fuera de aquí, no se ejecuta nada. */
+const TABLAS_IA = new Set([
+    'clientes', 'proyectos', 'pagos', 'suscripciones', 'dominios',
+    'accesos', 'servicios', 'notas', 'leads', 'tarjetas',
+]);
+
+/**
+ * Foto compacta de los datos para que el asistente sepa a qué te refieres.
+ * Solo lo justo: nombres, ids y campos clave. No viajan notas internas largas.
+ */
+export function fotoParaIA() {
+    const cli = cache.clientes.map(c => ({
+        id: c.id, empresa: c.empresa, nombre: c.nombre, telefono: c.telefono,
+        email: c.email, estado: c.estado,
+    }));
+    const pro = cache.proyectos.map(p => ({
+        id: p.id, cliente_id: p.cliente_id, nombre: p.nombre, tipo: p.tipo,
+        estado: p.estado, precio_base: p.precio_base, fecha_entrega: p.fecha_entrega,
+    }));
+    const pag = cache.pagos.map(p => ({
+        id: p.id, cliente_id: p.cliente_id, proyecto_id: p.proyecto_id,
+        concepto: p.concepto, importe: p.importe, estado: p.estado,
+        fecha_vencimiento: p.fecha_vencimiento,
+    }));
+    const sus = cache.suscripciones.map(s => ({
+        id: s.id, cliente_id: s.cliente_id, concepto: s.concepto, importe: s.importe,
+        periodicidad: s.periodicidad, proxima_fecha: s.proxima_fecha, activa: s.activa,
+    }));
+    const dom = cache.dominios.map(d => ({
+        id: d.id, cliente_id: d.cliente_id, dominio: d.dominio,
+        fecha_renovacion: d.fecha_renovacion, coste: d.coste,
+    }));
+    const ser = cache.servicios.map(s => ({ id: s.id, nombre: s.nombre, precio: s.precio, unidad: s.unidad }));
+    // Columnas por proyecto, para poder añadir tareas al tablero.
+    const col = cache.columnas.map(c => ({ id: c.id, proyecto_id: c.proyecto_id, nombre: c.nombre }));
+    const lea = cache.leads.map(l => ({ id: l.id, nombre: l.nombre, estado: l.estado, valor_estimado: l.valor_estimado }));
+
+    return JSON.stringify({
+        clientes: cli, proyectos: pro, pagos: pag, suscripciones: sus,
+        dominios: dom, servicios: ser, columnas: col, leads: lea,
+    });
+}
+
+/** Envía una orden al asistente y devuelve { respuesta, acciones }. */
+export async function preguntarAsistente(mensaje, historial = []) {
+    if (esLocal()) {
+        throw new Error('El asistente necesita la base de datos en la nube (Supabase).');
+    }
+    return adaptador.funcion('asistente', {
+        mensaje,
+        foto: fotoParaIA(),
+        historial,
+    });
+}
+
+/**
+ * Ejecuta UNA acción propuesta por el asistente, por el camino de siempre
+ * (con permisos y validaciones). Devuelve un texto de lo que hizo.
+ */
+export async function ejecutarAccion(accion) {
+    const { operacion, tabla, id, datos } = accion || {};
+    if (!TABLAS_IA.has(tabla)) throw new Error(`El asistente no puede tocar la tabla "${tabla}"`);
+
+    if (operacion === 'crear') {
+        if (tabla === 'proyectos') { await crearProyecto(datos); return 'Proyecto creado con su tablero'; }
+        await crear(tabla, datos);
+        return 'Creado';
+    }
+    if (operacion === 'editar') {
+        if (!id) throw new Error('Falta el identificador para editar');
+        await editar(tabla, id, datos);
+        return 'Cambios guardados';
+    }
+    if (operacion === 'borrar') {
+        if (!id) throw new Error('Falta el identificador para borrar');
+        if (tabla === 'clientes') { await borrarCliente(id); return 'Cliente eliminado'; }
+        if (tabla === 'proyectos') { await borrarProyecto(id); return 'Proyecto eliminado'; }
+        await borrar(tabla, id);
+        return 'Eliminado';
+    }
+    throw new Error(`Operación desconocida: ${operacion}`);
+}
+

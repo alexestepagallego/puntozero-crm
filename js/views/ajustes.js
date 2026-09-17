@@ -79,6 +79,30 @@ export async function vistaAjustes(_params, raiz) {
                 </div>` : '')}
 
             <div class="card">
+                <div class="card-head">
+                    <h2>Asistente (IA)</h2>
+                    <span class="tag ${raw(esLocal() ? 'line' : 'info')}">${raw(esLocal() ? 'Necesita Supabase' : 'Gemini')}</span>
+                </div>
+                <p class="small muted">Un ayudante que entiende órdenes escritas ("sube a 200 € la carta de Villegas")
+                y prepara los cambios para que tú los confirmes. Es gratis con Gemini y, al estar en España,
+                Google no usa tus datos para entrenar.</p>
+                <p class="small mt"><span class="strong">Para activarlo</span> (una sola vez):</p>
+                <ol class="small muted" style="padding-left:18px;line-height:1.7">
+                    <li>Saca tu clave gratis en <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a> (empieza por <span class="mono">AIza…</span>).</li>
+                    <li>Guárdala como secreto del proyecto en Supabase:</li>
+                </ol>
+                <div class="copy-field mt" style="margin-left:18px">
+                    <input type="text" readonly value="supabase secrets set GEMINI_API_KEY=TU_CLAVE">
+                    <button class="btn btn-ghost btn-sm" data-copiar="supabase secrets set GEMINI_API_KEY=TU_CLAVE">Copiar</button>
+                </div>
+                <p class="tiny muted mt" style="margin-left:18px">O desde el panel de Supabase: Edge Functions → asistente → Secrets.
+                Los pasos completos están en <a href="https://github.com/alexestepagallego/puntozero-crm/blob/main/docs/ASISTENTE-IA.md" target="_blank" rel="noopener">la guía</a>.</p>
+                <div class="row mt">
+                    <button class="btn btn-ghost btn-sm" data-probar-ia>Probar el asistente</button>
+                </div>
+            </div>
+
+            <div class="card">
                 <div class="card-head"><h2>Avisos</h2></div>
                 <p class="small muted">El panel de inicio ya te enseña todo lo que vence en 30 días cada vez que entras.
                 Además puedes llevarte los vencimientos a tu calendario y recibirlos por email.</p>
@@ -128,6 +152,10 @@ export async function vistaAjustes(_params, raiz) {
         </div>`;
 
     on(raiz, 'click', '[data-conexion]', () => abrirConexion());
+    on(raiz, 'click', '[data-probar-ia]', () => {
+        if (esLocal()) return toast('Primero conecta Supabase', 'bad');
+        import('./asistente.js').then(m => m.alternarAsistente());
+    });
 
     on(raiz, 'click', '[data-ics]', () => {
         const eventos = eventosCalendario();
