@@ -50,7 +50,7 @@ No hay que volver a desplegar nada: la función coge la clave sola.
 
 ## Ajustes opcionales
 
-- **Cambiar de modelo**: por defecto usa `gemini-2.5-flash` (rápido y gratis).
+- **Cambiar de modelo**: por defecto usa `gemini-flash-latest` (rápido y gratis).
   Para otro, añade el secreto `GEMINI_MODEL` con el nombre que quieras.
 - **Límite gratuito**: el plan gratis de Gemini tiene un tope de peticiones al
   día, de sobra para el día a día. Si algún día lo agotas, el asistente te avisa

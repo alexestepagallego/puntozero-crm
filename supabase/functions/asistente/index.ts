@@ -15,7 +15,7 @@
  * Variables de entorno (Supabase → Edge Functions → Secrets):
  *   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY  · las pone Supabase
  *   GEMINI_API_KEY                           · tu clave de aistudio.google.com
- *   GEMINI_MODEL                             · opcional (por defecto gemini-2.5-flash)
+ *   GEMINI_MODEL                             · opcional (por defecto gemini-flash-latest)
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4';
@@ -101,7 +101,7 @@ async function preguntarGemini(historial: unknown[], foto: string, mensaje: stri
     if (!clave) {
         return { error: 'sin_configurar' };
     }
-    const modelo = Deno.env.get('GEMINI_MODEL') || 'gemini-2.5-flash';
+    const modelo = Deno.env.get('GEMINI_MODEL') || 'gemini-flash-latest';
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${clave}`;
 
     // El último turno lleva la foto de datos + la orden del usuario.
