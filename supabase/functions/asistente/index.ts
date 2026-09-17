@@ -182,11 +182,15 @@ function sanear(bruto: unknown) {
             if (campo in datosBrutos) datos[campo] = datosBrutos[campo];
         }
         // id_temporal no es una columna: es la etiqueta para encadenar creaciones.
-        if (typeof datosBrutos.id_temporal === 'string') datos.id_temporal = datosBrutos.id_temporal;
+        // Va como campo aparte de la acción (nunca dentro de datos), así los
+        // datos que se insertan solo contienen columnas reales.
+        const idTemporal = typeof datosBrutos.id_temporal === 'string' ? datosBrutos.id_temporal
+            : (typeof ac.id_temporal === 'string' ? ac.id_temporal : null);
 
         return {
             operacion, tabla,
             id: ac.id ? String(ac.id) : null,
+            id_temporal: idTemporal,
             datos,
             resumen: String(ac.resumen || 'Cambio propuesto'),
         };

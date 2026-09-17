@@ -85,15 +85,19 @@ export async function recargar(tabla) {
 /* -------------------------------------------------- OPERACIONES DE ALTO NIVEL */
 
 export async function crear(tabla, fila) {
-    const nueva = await adaptador.insert(tabla, fila);
+    const limpia = { ...fila };
+    delete limpia.id_temporal;             // nunca es una columna real
+    const nueva = await adaptador.insert(tabla, limpia);
     cache[tabla].push(nueva);
     return nueva;
 }
 
 export async function editar(tabla, id, parche) {
-    const fila = await adaptador.update(tabla, id, parche);
+    const limpio = { ...parche };
+    delete limpio.id_temporal;
+    const fila = await adaptador.update(tabla, id, limpio);
     const i = cache[tabla].findIndex(f => String(f.id) === String(id));
-    if (i !== -1) cache[tabla][i] = fila ?? { ...cache[tabla][i], ...parche };
+    if (i !== -1) cache[tabla][i] = fila ?? { ...cache[tabla][i], ...limpio };
     return cache[tabla][i];
 }
 
@@ -390,8 +394,8 @@ export async function ejecutarAcciones(acciones) {
 
     for (const accion of acciones) {
         const datos = { ...(accion.datos || {}) };
-        const temporal = datos.id_temporal;
-        delete datos.id_temporal;
+        delete datos.id_temporal;              // por si acaso viniera dentro
+        const temporal = accion.id_temporal || null;
 
         // Resolver referencias a cosas creadas en esta misma tanda.
         for (const [campo, tabla, ultimo] of [

@@ -171,9 +171,16 @@ export function token(largo = 10) {
 
 /* ------------------------------------------------------------- AVISOS ---- */
 
+let ultimoToast = { txt: '', ts: 0 };
 export function toast(mensaje, tipo = '') {
     const cont = $('#toasts');
     if (!cont) return;
+    // Evita inundar la pantalla: ignora el mismo aviso repetido en < 3 s
+    // y no deja más de 3 avisos a la vez.
+    const ahora = Date.now();
+    if (mensaje === ultimoToast.txt && ahora - ultimoToast.ts < 3000) return;
+    ultimoToast = { txt: mensaje, ts: ahora };
+    while (cont.children.length >= 3) cont.firstChild.remove();
     const t = document.createElement('div');
     t.className = `toast ${tipo}`;
     t.textContent = mensaje;
