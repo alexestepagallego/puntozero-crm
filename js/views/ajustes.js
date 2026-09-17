@@ -47,14 +47,14 @@ export async function vistaAjustes(_params, raiz) {
                     <p class="small muted mb">Quien entre con su email aparecerá aquí. El primero en registrarse
                     es administrador; a los demás socios los subes a administrador con una línea de SQL
                     (está en la guía).</p>
-                    ${equipo.length ? equipo.map(u => html`
+                    ${raw(equipo.length ? equipo.map(u => html`
                         <div class="list-item">
                             <span class="stack grow">
                                 <span class="small strong">${u.nombre || u.email}</span>
                                 <span class="tiny muted">${u.email}</span>
                             </span>
                             <span class="tag ${raw(u.rol === 'admin' ? 'solid' : 'line')}">${raw(u.rol === 'admin' ? 'Administrador' : 'Cliente')}</span>
-                        </div>`).join('') : '<p class="small muted">Todavía no ha entrado nadie más.</p>'}
+                        </div>`).join('') : '<p class="small muted">Todavía no ha entrado nadie más.</p>')}
                     ` : '<p class="small muted">En modo local solo existe un usuario: tú. El control de usuarios llega al conectar Supabase.</p>')}
             </div>
 
@@ -66,7 +66,7 @@ export async function vistaAjustes(_params, raiz) {
                     </div>
                     <p class="small muted mb">Quién dio o quitó el acceso a cada cliente, y cuándo.
                     Lo escribe el servidor: no se puede tocar desde aquí.</p>
-                    ${registro.length ? registro.map(r => html`
+                    ${raw(registro.length ? registro.map(r => html`
                         <div class="list-item">
                             <span class="tag ${raw(r.accion === 'revocar' ? 'bad' : r.accion === 'crear' ? 'ok' : 'warn')}">${raw({
                                 crear: 'alta', restablecer: 'nueva clave', revocar: 'baja',
@@ -75,7 +75,7 @@ export async function vistaAjustes(_params, raiz) {
                                 <span class="small strong truncate">${r.email}</span>
                                 <span class="tiny muted">${r.email_actor || '—'} · ${fecha(r.creado)}</span>
                             </span>
-                        </div>`).join('') : '<p class="small muted">Todavía no has dado ningún acceso.</p>'}
+                        </div>`).join('') : '<p class="small muted">Todavía no has dado ningún acceso.</p>')}
                 </div>` : '')}
 
             <div class="card">
