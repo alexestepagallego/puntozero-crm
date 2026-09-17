@@ -87,7 +87,13 @@ Reglas:
 - Fechas en formato AAAA-MM-DD. Importes como número (ej. 200 o 149.80), sin símbolo de euro.
 - estado de proyecto: Presupuesto, Diseño, Desarrollo, Revisión, Publicado o Mantenimiento.
 - estado de cliente: activo, potencial o inactivo. estado de pago: pendiente o pagado.
-- Para crear un pago o proyecto siempre necesitas el cliente_id correcto de la foto de datos.
+- Para crear un pago o proyecto sobre un cliente que YA existe, usa su cliente_id de la foto.
+- Si en la MISMA orden creas un registro y otro lo necesita (p. ej. "crea un cliente
+  y su proyecto"), al crear el primero añade en "datos" un campo "id_temporal" con un
+  nombre inventado (p. ej. "nuevo1"), y en la acción que lo referencia pon ese mismo
+  valor en cliente_id (o proyecto_id). El CRM sustituirá "nuevo1" por el id real.
+  Ejemplo: crear cliente {..., "id_temporal": "nuevo1"} y luego crear proyecto
+  {"cliente_id": "nuevo1", ...}.
 - Si el usuario pide algo ambiguo (dos clientes podrían encajar, falta un dato obligatorio),
   NO inventes: pon acciones vacías y pregunta en "respuesta" qué falta.
 - Si solo es una pregunta ("¿quién me debe dinero?"), responde en "respuesta" y deja "acciones": [].
@@ -101,7 +107,7 @@ async function preguntarGemini(historial: unknown[], foto: string, mensaje: stri
     if (!clave) {
         return { error: 'sin_configurar' };
     }
-    const modelo = Deno.env.get('GEMINI_MODEL') || 'gemini-flash-latest';
+    const modelo = Deno.env.get('GEMINI_MODEL') || 'gemini-flash-lite-latest';
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${clave}`;
 
     // El último turno lleva la foto de datos + la orden del usuario.
@@ -116,17 +122,32 @@ async function preguntarGemini(historial: unknown[], foto: string, mensaje: stri
         generationConfig: { responseMimeType: 'application/json', temperature: 0.2, maxOutputTokens: 2048 },
     };
 
-    const r = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(cuerpo),
-    });
+    // Los modelos nuevos sufren picos de demanda (503). Reintentamos un par de
+    // veces con una pequeña espera antes de rendirnos, para que al usuario no le
+    // llegue ese error temporal.
+    let r: Response | null = null;
+    let ultimoDetalle = '';
+    for (let intento = 0; intento < 3; intento++) {
+        r = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(cuerpo),
+        });
+        if (r.ok) break;
 
-    if (!r.ok) {
-        const detalle = await r.text();
-        if (r.status === 400 && /API key not valid/i.test(detalle)) return { error: 'clave_invalida' };
+        ultimoDetalle = await r.text();
+        if (r.status === 400 && /API key not valid/i.test(ultimoDetalle)) return { error: 'clave_invalida' };
         if (r.status === 429) return { error: 'limite', detalle: 'Has llegado al límite gratuito de Gemini por hoy. Prueba de nuevo en un rato.' };
-        return { error: 'gemini', detalle: detalle.slice(0, 300) };
+        // 503/UNAVAILABLE (o 500): pico temporal → esperar y reintentar.
+        if (r.status === 503 || r.status === 500) {
+            await new Promise((res) => setTimeout(res, 700 * (intento + 1)));
+            continue;
+        }
+        return { error: 'gemini', detalle: ultimoDetalle.slice(0, 300) };
+    }
+
+    if (!r || !r.ok) {
+        return { error: 'ocupado', detalle: 'Gemini está saturado ahora mismo. Espera unos segundos y vuelve a intentarlo.' };
     }
 
     const data = await r.json();
@@ -160,6 +181,8 @@ function sanear(bruto: unknown) {
         for (const campo of permitidos) {
             if (campo in datosBrutos) datos[campo] = datosBrutos[campo];
         }
+        // id_temporal no es una columna: es la etiqueta para encadenar creaciones.
+        if (typeof datosBrutos.id_temporal === 'string') datos.id_temporal = datosBrutos.id_temporal;
 
         return {
             operacion, tabla,
@@ -200,9 +223,11 @@ Deno.serve(async (req) => {
                 sin_configurar: 'El asistente todavía no tiene configurada la clave de Gemini.',
                 clave_invalida: 'La clave de Gemini no es válida. Revísala en Ajustes.',
                 limite: salida.detalle || 'Límite alcanzado.',
+                ocupado: salida.detalle || 'Gemini está saturado. Prueba de nuevo en unos segundos.',
                 gemini: 'Gemini ha devuelto un error: ' + (salida.detalle || ''),
             };
-            return responder({ error: mensajes[salida.error] || 'Error del asistente', codigo: salida.error }, salida.error === 'sin_configurar' ? 503 : 502);
+            const estado = salida.error === 'sin_configurar' ? 503 : salida.error === 'ocupado' ? 503 : 502;
+            return responder({ error: mensajes[salida.error] || 'Error del asistente', codigo: salida.error }, estado);
         }
 
         // 4. Saneado y respuesta.

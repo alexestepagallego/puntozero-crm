@@ -4,7 +4,7 @@
  * aplican por el camino seguro (misma capa de datos, con permisos y validación).
  */
 import { html, raw, esc, on, toast, confirmar, euros } from '../util.js';
-import { preguntarAsistente, ejecutarAccion, esLocal } from '../data/index.js';
+import { preguntarAsistente, ejecutarAcciones, esLocal } from '../data/index.js';
 import { ico } from '../ui.js';
 import { repintar } from '../estado.js';
 
@@ -159,21 +159,13 @@ async function aplicar(indice) {
     const botones = document.querySelector(`[data-msg="${indice}"]`);
     if (botones) botones.querySelectorAll('button').forEach(b => b.disabled = true);
 
-    const errores = [];
-    for (const accion of m.acciones) {
-        try {
-            await ejecutarAccion(accion);
-        } catch (e) {
-            errores.push(`${accion.resumen}: ${e.message}`);
-        }
-    }
-
-    if (errores.length) {
-        m.error = 'No se pudieron aplicar algunos cambios:\n' + errores.join('\n');
-        toast('Algún cambio falló', 'bad');
-    } else {
+    try {
+        await ejecutarAcciones(m.acciones);
         m.aplicado = true;
         toast('Cambios aplicados');
+    } catch (e) {
+        m.error = 'No se pudo aplicar: ' + e.message;
+        toast('Algún cambio falló', 'bad');
     }
     await repintar();            // refresca la vista de detrás con los datos nuevos
     pintarConversacion();

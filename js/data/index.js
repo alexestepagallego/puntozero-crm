@@ -355,22 +355,66 @@ export async function ejecutarAccion(accion) {
     if (!TABLAS_IA.has(tabla)) throw new Error(`El asistente no puede tocar la tabla "${tabla}"`);
 
     if (operacion === 'crear') {
-        if (tabla === 'proyectos') { await crearProyecto(datos); return 'Proyecto creado con su tablero'; }
-        await crear(tabla, datos);
-        return 'Creado';
+        const fila = tabla === 'proyectos' ? await crearProyecto(datos) : await crear(tabla, datos);
+        return { texto: tabla === 'proyectos' ? 'Proyecto creado con su tablero' : 'Creado', fila };
     }
     if (operacion === 'editar') {
         if (!id) throw new Error('Falta el identificador para editar');
-        await editar(tabla, id, datos);
-        return 'Cambios guardados';
+        const fila = await editar(tabla, id, datos);
+        return { texto: 'Cambios guardados', fila };
     }
     if (operacion === 'borrar') {
         if (!id) throw new Error('Falta el identificador para borrar');
-        if (tabla === 'clientes') { await borrarCliente(id); return 'Cliente eliminado'; }
-        if (tabla === 'proyectos') { await borrarProyecto(id); return 'Proyecto eliminado'; }
+        if (tabla === 'clientes') { await borrarCliente(id); return { texto: 'Cliente eliminado' }; }
+        if (tabla === 'proyectos') { await borrarProyecto(id); return { texto: 'Proyecto eliminado' }; }
         await borrar(tabla, id);
-        return 'Eliminado';
+        return { texto: 'Eliminado' };
     }
     throw new Error(`Operación desconocida: ${operacion}`);
 }
 
+/**
+ * Aplica en orden una tanda de acciones del asistente, enlazando las
+ * creaciones encadenadas: si una acción crea un cliente con "id_temporal" y otra
+ * lo referencia (cliente_id / proyecto_id), se sustituye por el id real. Como
+ * red de seguridad, si un proyecto/pago apunta a un cliente que no existe pero
+ * en esta misma tanda se acaba de crear justo uno, se enlaza con ese.
+ */
+export async function ejecutarAcciones(acciones) {
+    const mapa = {};                 // id_temporal → id real
+    let ultimoCliente = null;        // último cliente creado en la tanda
+    let ultimoProyecto = null;
+    const hechas = [];
+
+    const existe = (tabla, id) => cache[tabla]?.some(f => String(f.id) === String(id));
+
+    for (const accion of acciones) {
+        const datos = { ...(accion.datos || {}) };
+        const temporal = datos.id_temporal;
+        delete datos.id_temporal;
+
+        // Resolver referencias a cosas creadas en esta misma tanda.
+        for (const [campo, tabla, ultimo] of [
+            ['cliente_id', 'clientes', () => ultimoCliente],
+            ['proyecto_id', 'proyectos', () => ultimoProyecto],
+        ]) {
+            if (!datos[campo]) continue;
+            if (mapa[datos[campo]]) datos[campo] = mapa[datos[campo]];
+            else if (!existe(tabla, datos[campo]) && ultimo()) datos[campo] = ultimo();
+        }
+
+        // El id de la propia acción (editar/borrar) también puede ser temporal.
+        let id = accion.id;
+        if (id && mapa[id]) id = mapa[id];
+
+        const res = await ejecutarAccion({ ...accion, id, datos });
+        hechas.push(res?.texto || 'Hecho');
+
+        if (accion.operacion === 'crear' && res?.fila?.id) {
+            if (temporal) mapa[temporal] = res.fila.id;
+            if (accion.tabla === 'clientes') ultimoCliente = res.fila.id;
+            if (accion.tabla === 'proyectos') ultimoProyecto = res.fila.id;
+        }
+    }
+    return hechas;
+}
