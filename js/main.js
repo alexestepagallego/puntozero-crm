@@ -310,6 +310,43 @@ function avisarDeFallos(fallos) {
     console.warn('Fallos al cargar:', fallos);
 }
 
+
+/**
+ * Comprueba si hay una versión más reciente publicada y, si la hay, ofrece
+ * recargar. Evita el clásico "tengo la versión vieja en caché": el CRM se da
+ * cuenta solo. La comprobación pide build.json sin caché (pesa nada).
+ */
+async function vigilarVersion() {
+    let miVersion = null;
+    const revisar = async () => {
+        try {
+            const r = await fetch('build.json?t=' + Date.now(), { cache: 'no-store' });
+            if (!r.ok) return;
+            const { v } = await r.json();
+            if (!v) return;
+            if (miVersion === null) { miVersion = v; return; }
+            if (v !== miVersion) mostrarAvisoVersion();
+        } catch { /* sin conexión: se reintenta luego */ }
+    };
+    await revisar();                       // marca la versión actual
+    setInterval(revisar, 120000);          // y vuelve a mirar cada 2 minutos
+    window.addEventListener('focus', revisar);
+}
+
+function mostrarAvisoVersion() {
+    if (document.getElementById('pz-version-nueva')) return;
+    const barra = document.createElement('div');
+    barra.id = 'pz-version-nueva';
+    barra.className = 'banner';
+    barra.style.cssText = 'position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:150;box-shadow:var(--shadow);cursor:pointer';
+    barra.innerHTML = '<span>Hay una versión nueva del CRM.</span> <button class="btn btn-sm">Recargar</button>';
+    barra.querySelector('button').addEventListener('click', async () => {
+        try { const ks = await caches.keys(); await Promise.all(ks.map(k => caches.delete(k))); } catch {}
+        location.reload();
+    });
+    document.body.appendChild(barra);
+}
+
 async function inicio() {
     recargarAdaptador();
     alFallarLaCarga(avisarDeFallos);
@@ -352,6 +389,7 @@ async function inicio() {
     registrarRefrescoNav(refrescarNav);
     arrancar();
     alCambiarSesion(() => location.reload());
+    vigilarVersion();
 }
 
 inicio();
