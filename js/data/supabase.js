@@ -165,9 +165,17 @@ export const adaptadorSupabase = {
      * Se usa para lo que el navegador no puede hacer por sí solo, como dar de
      * alta el acceso de un cliente.
      */
-    async funcion(nombre, cuerpo) {
+    async funcion(nombre, cuerpo, { timeoutMs = 60000 } = {}) {
         const sb = await supa();
-        const { data, error } = await sb.functions.invoke(nombre, { body: cuerpo });
+        // Carrera contra un reloj: si el servidor no contesta a tiempo, se corta
+        // en vez de dejar la interfaz esperando para siempre.
+        const conTope = Promise.race([
+            sb.functions.invoke(nombre, { body: cuerpo }),
+            new Promise((_, rechazar) => setTimeout(
+                () => rechazar(new Error('El asistente ha tardado demasiado. Prueba otra vez en un momento.')),
+                timeoutMs)),
+        ]);
+        const { data, error } = await conTope;
         if (error) {
             // El mensaje útil viene en el cuerpo de la respuesta, no en el error.
             try {

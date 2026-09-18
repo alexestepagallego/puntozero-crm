@@ -128,11 +128,19 @@ async function preguntarGemini(historial: unknown[], foto: string, mensaje: stri
     let r: Response | null = null;
     let ultimoDetalle = '';
     for (let intento = 0; intento < 3; intento++) {
-        r = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(cuerpo),
-        });
+        try {
+            r = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(cuerpo),
+                signal: AbortSignal.timeout(22000),   // 22 s por intento, no más
+            });
+        } catch (err) {
+            // Tiempo agotado o corte de red: se trata como pico y se reintenta.
+            ultimoDetalle = String((err as Error)?.name === 'TimeoutError' ? 'Gemini ha tardado demasiado' : err);
+            await new Promise((res) => setTimeout(res, 500 * (intento + 1)));
+            continue;
+        }
         if (r.ok) break;
 
         ultimoDetalle = await r.text();
