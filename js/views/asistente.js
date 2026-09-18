@@ -41,6 +41,18 @@ function construir() {
 
     on(panel, 'click', '#pz-asist-cerrar', () => panel.remove());
 
+    // Delegación de clics enganchada UNA sola vez sobre el cuerpo (que no se
+    // recrea, solo cambia su innerHTML). Antes se reenganchaba en cada mensaje
+    // y los oyentes se acumulaban: un clic en "Confirmar" acababa disparando la
+    // creación tantas veces como mensajes hubiera → clientes duplicados.
+    const cuerpo = panel.querySelector('#pz-asist-cuerpo');
+    on(cuerpo, 'click', '[data-ejemplo]', (_ev, el) => enviar(el.dataset.ejemplo));
+    on(cuerpo, 'click', '[data-aplicar]', (_ev, el) => aplicar(Number(el.dataset.aplicar)));
+    on(cuerpo, 'click', '[data-cancelar]', (_ev, el) => {
+        conversacion[Number(el.dataset.cancelar)].cancelado = true;
+        pintarConversacion();
+    });
+
     const input = panel.querySelector('#pz-asist-input');
     input.addEventListener('input', () => {
         input.style.height = 'auto';
@@ -80,12 +92,10 @@ function pintarConversacion() {
                         <button class="asist-ejemplo" data-ejemplo="${esc(e)}">${e}</button>`)}
                 </div>
             </div>`;
-        on(cuerpo, 'click', '[data-ejemplo]', (_ev, el) => enviar(el.dataset.ejemplo));
         return;
     }
 
     cuerpo.innerHTML = conversacion.map(pintarMensaje).join('');
-    conectarAcciones(cuerpo);
     cuerpo.scrollTop = cuerpo.scrollHeight;
 }
 
@@ -135,17 +145,10 @@ const icoOperacion = (op) => ({
 
 /* ----------------------------------------------------------- ACCIONES ----- */
 
-function conectarAcciones(cuerpo) {
-    on(cuerpo, 'click', '[data-aplicar]', (_ev, el) => aplicar(Number(el.dataset.aplicar)));
-    on(cuerpo, 'click', '[data-cancelar]', (_ev, el) => {
-        conversacion[Number(el.dataset.cancelar)].cancelado = true;
-        pintarConversacion();
-    });
-}
-
 async function aplicar(indice) {
     const m = conversacion[indice];
-    if (!m || m.aplicado) return;
+    if (!m || m.aplicado || m.aplicando) return;
+    m.aplicando = true;                    // candado síncrono: un solo aplicado
 
     // Confirmación extra si hay algún borrado (lo irreversible).
     const borrados = m.acciones.filter(a => a.operacion === 'borrar');
@@ -153,7 +156,7 @@ async function aplicar(indice) {
         const ok = await confirmar(
             `Vas a eliminar ${borrados.length} elemento(s). Esto no se puede deshacer.`,
             { textoOk: 'Eliminar' });
-        if (!ok) return;
+        if (!ok) { m.aplicando = false; return; }
     }
 
     const botones = document.querySelector(`[data-msg="${indice}"]`);
@@ -165,6 +168,7 @@ async function aplicar(indice) {
         toast('Cambios aplicados');
     } catch (e) {
         m.error = 'No se pudo aplicar: ' + e.message;
+        m.aplicando = false;       // suelta el candado para poder reintentar
         toast('Algún cambio falló', 'bad');
     }
     await repintar();            // refresca la vista de detrás con los datos nuevos
